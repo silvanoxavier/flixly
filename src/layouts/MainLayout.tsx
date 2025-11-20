@@ -45,7 +45,6 @@ export default function MainLayout() {
   const handleMouseLeave = () => setTimeout(() => setSidebarExpanded(false), 300);
 
   const sidebarWidth = sidebarExpanded ? 'w-64' : 'w-16';
-  const mainMargin = sidebarExpanded ? 'md:ml-64' : 'md:ml-16';
   const headerPaddingTop = 'pt-16 md:pt-20';
 
   return (
@@ -98,8 +97,12 @@ export default function MainLayout() {
         </div>
       </header>
 
-      {/* Sidebar */}
-      <aside className={`hidden md:block ${sidebarWidth} bg-card/95 border-r transition-all duration-500 ease-out shadow-sm h-full ${headerPaddingTop} overflow-hidden z-40`} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      {/* Sidebar FIXED OVERLAY md+ (expande SOBRE content sem mover) */}
+      <aside 
+        className={`hidden md:fixed md:left-0 md:top-16 md:h-[calc(100vh-4rem)] md:pt-0 md:z-40 ${sidebarWidth} bg-card/95 border-r transition-all duration-500 ease-out shadow-lg overflow-hidden ${sidebarWidth === 'w-64' ? 'border-r-border/50' : ''}`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         <SidebarNav expanded={sidebarExpanded} />
       </aside>
 
@@ -110,9 +113,9 @@ export default function MainLayout() {
         </SheetContent>
       </Sheet>
 
-      {/* Main */}
-      <div className={`flex-1 flex flex-col overflow-hidden ${headerPaddingTop} ${mainMargin} md:transition-all md:duration-500 md:ease-out min-w-0`}>
-        <main className="flex-1 overflow-auto p-4 md:pl-1 md:pr-6 md:py-6 lg:p-8 lg:pl-6">
+      {/* Main FULL WIDTH (sem ml/movimento, p-6 menos left space) */}
+      <div className={`flex-1 flex flex-col overflow-hidden ${headerPaddingTop}`}>
+        <main className="flex-1 overflow-auto p-6">
           <Outlet context={{ company: selectedCompany }} />
         </main>
       </div>

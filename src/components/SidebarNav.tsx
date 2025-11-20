@@ -5,6 +5,7 @@ import { MessageCircle, BarChart3, FileText, Package, Building, Users, Zap, Layo
 import { cn } from "@/lib/utils";
 
 const navItems = [
+  { href: "/", label: "Dashboard", icon: MessageCircle },
   { href: "/chat", label: "Chat", icon: MessageCircle },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/reports", label: "Relatórios", icon: FileText },

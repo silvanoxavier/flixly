@@ -39,14 +39,15 @@ export default function MainLayout() {
   const handleMouseLeave = () => setTimeout(() => setSidebarExpanded(false), 200);
 
   const sidebarWidth = sidebarExpanded ? 'w-64' : 'w-16';
+  const mainMargin = sidebarExpanded ? 'md:ml-64' : 'md:ml-16';
+  const headerPaddingTop = 'pt-16 md:pt-20';
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       {/* Header FIXED full width */}
       <header className="fixed top-0 left-0 right-0 h-16 md:h-20 border-b bg-card/90 backdrop-blur-sm z-50 flex items-center px-4 md:px-6">
-        {/* Left: Hamburger MOBILE ONLY (md:hidden) + Logo + Title */}
+        {/* Left: Hamburger MOBILE ONLY + Logo + Title */}
         <div className="flex items-center space-x-3 min-w-0 flex-1 max-w-md">
-          {/* Hamburger MOBILE ONLY */}
           <Button 
             variant="ghost" 
             size="icon" 
@@ -55,7 +56,6 @@ export default function MainLayout() {
           >
             <Menu className="h-6 w-6" />
           </Button>
-          {/* Logo Flixly */}
           <div className="flex items-center space-x-2">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary to-green-500 rounded-xl flex items-center justify-center shadow-lg">
               <span className="font-black text-lg md:text-xl text-primary-foreground tracking-tight">F</span>
@@ -64,7 +64,6 @@ export default function MainLayout() {
               <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">Flixly</h1>
             </div>
           </div>
-          {/* Title */}
           <h2 className="text-lg font-semibold text-foreground truncate hidden md:block ml-2">{currentTitle}</h2>
         </div>
 
@@ -108,25 +107,24 @@ export default function MainLayout() {
         </div>
       </header>
 
-      {/* Desktop/Tablet Sidebar: FIXED OVERLAY md+ (sem ocupar espaço main) */}
+      {/* Sidebar BLOCK ocupa espaço md+ (narrow icons, hover full) */}
       <aside 
-        className={`hidden md:fixed md:top-16 md:h-[calc(100vh-4rem)] md:left-0 md:z-40 ${sidebarWidth} bg-card/95 border-r border-r-border/50 shadow-lg transition-all duration-300 ease-out overflow-hidden`}
+        className={`hidden md:block ${sidebarWidth} bg-card/95 border-r transition-all duration-300 ease-out shadow-sm h-full ${headerPaddingTop} overflow-hidden z-40`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        style={{ top: '4rem' }} // h-16=4rem
       >
         <SidebarNav expanded={sidebarExpanded} />
       </aside>
 
-      {/* Mobile Sidebar Overlay */}
+      {/* Mobile Sheet */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-80 p-0 border-r bg-card max-w-xs pt-16 md:pt-20 md:hidden">
+        <SheetContent side="left" className={`w-80 p-0 border-r bg-card max-w-xs ${headerPaddingTop} md:hidden`}>
           <SidebarNav expanded={true} />
         </SheetContent>
       </Sheet>
 
-      {/* Main content FULL WIDTH (sem ml sidebar) */}
-      <div className="flex-1 flex flex-col overflow-hidden pt-16 md:pt-20">
+      {/* Main content empurrado pela sidebar */}
+      <div className={`flex-1 flex flex-col overflow-hidden ${headerPaddingTop} ${mainMargin} md:transition-all md:duration-300 md:ease-out`}>
         <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
           <Outlet context={{ company: selectedCompany }} />
         </main>

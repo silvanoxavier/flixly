@@ -34,19 +34,30 @@ export default function MainLayout() {
   const location = useLocation();
   const currentTitle = pageTitles[location.pathname as keyof typeof pageTitles] || "Flixly";
 
-  // Delay mouseleave para UX melhor (fica aberto 200ms)
+  // Delay mouseleave UX
   const handleMouseEnter = () => setSidebarExpanded(true);
   const handleMouseLeave = () => setTimeout(() => setSidebarExpanded(false), 200);
 
   const sidebarWidth = sidebarExpanded ? 'w-64' : 'w-16';
   const mainMargin = sidebarExpanded ? 'lg:ml-64' : 'lg:ml-16';
+  const headerHeight = 'h-16 md:h-20';
+  const sidebarPaddingTop = 'pt-16 md:pt-20';
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      {/* Header FIXED full width (overlay sidebar top) */}
-      <header className="fixed top-0 left-0 right-0 h-16 md:h-20 border-b bg-card/90 backdrop-blur-sm z-50 flex items-center px-4 md:px-6">
-        {/* Left: Logo + Title (sem hamburger lg+) */}
+      {/* Header FIXED full width */}
+      <header className={`fixed top-0 left-0 right-0 ${headerHeight} border-b bg-card/90 backdrop-blur-sm z-50 flex items-center px-4 md:px-6`}>
+        {/* Left: Hamburger MOBILE ONLY + Logo + Title */}
         <div className="flex items-center space-x-3 min-w-0 flex-1 max-w-md">
+          {/* Hamburger MOBILE ONLY (lg:hidden) */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setMobileOpen(true)}
+            className="lg:hidden"
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
           {/* Logo Flixly */}
           <div className="flex items-center space-x-2">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary to-green-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -100,34 +111,24 @@ export default function MainLayout() {
         </div>
       </header>
 
-      {/* Sidebar DESKTOP: ÍCONES SEMPRE VISÍVEIS (w-16), hover expande w-64 + labels */}
+      {/* Desktop Sidebar: ÍCONES SEMPRE VISÍVEIS lg+ (narrow w-16, hover w-64) */}
       <aside 
-        className={`hidden lg:block ${sidebarWidth} bg-card/95 border-r transition-all duration-300 ease-out shadow-sm h-screen pt-16 md:pt-20 overflow-hidden z-40`}
+        className={`hidden lg:block ${sidebarWidth} bg-card/95 border-r transition-all duration-300 ease-out shadow-sm h-screen ${sidebarPaddingTop} overflow-hidden z-40`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
         <SidebarNav expanded={sidebarExpanded} />
       </aside>
 
-      {/* Mobile Sidebar Overlay (hamburger mobile only) */}
+      {/* Mobile Sidebar Overlay */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-80 p-0 border-r bg-card max-w-xs pt-16 md:pt-20 lg:hidden">
+        <SheetContent side="left" className={`w-80 p-0 border-r bg-card max-w-xs ${sidebarPaddingTop} lg:hidden`}>
           <SidebarNav expanded={true} />
         </SheetContent>
       </Sheet>
 
-      {/* Mobile Hamburger (apenas small screens) */}
-      <Button 
-        variant="ghost" 
-        size="icon" 
-        onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-5 left-4 z-50"
-      >
-        <Menu className="h-6 w-6" />
-      </Button>
-
       {/* Main content */}
-      <div className={`flex-1 flex flex-col overflow-hidden pt-16 md:pt-20 ${mainMargin} lg:transition-all lg:duration-300 lg:ease-out`}>
+      <div className={`flex-1 flex flex-col overflow-hidden ${sidebarPaddingTop} ${mainMargin} lg:transition-all lg:duration-300 lg:ease-out`}>
         <main className="flex-1 overflow-auto p-0 md:p-6">
           <Outlet context={{ company: selectedCompany }} />
         </main>

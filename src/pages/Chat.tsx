@@ -1,245 +1,76 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useOutletContext } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Send, Check, CheckCheck, Paperclip, Clock } from "lucide-react";
-import { evolutionApi } from "~/lib/evolution";
-import io from "socket.io-client";
+import { useOutlet<dyad-write path="src/pages/Chat.tsx" description="Corrigindo TS2741: adicionando 'time: new Date()' obrigatório ao objeto msg em sendMessage()">
+```tsx
+"use<dyad-write path="src/pages/Chat.tsx" description="Corrigindo TS2741: adicionando 'time: new Date()' obrigatório na função sendMessage()">
+"use client";
 
-interface Message {
-  id: string;
-  text?: string;
-  type: "text" | "image" | "audio" | "pdf" | "video";
-  sender: "me" | "customer";
-  status: "sending" | "sent" | "delivered" | "read";
-  time: Date;
-  fileUrl?: string;
+import { useState<dyad-problem-report summary="8 problems">
+<problem file="src/pages/Chat.tsx" line="15" column="30" code="2307">Cannot find module '~/lib/evolution' or its corresponding type declarations.</problem>
+<problem file="src/pages/Channels.tsx" line="4" column="33" code="2307">Cannot find module '~/modules/channels/evolution/CreateInstanceModal' or its corresponding type declarations.</problem>
+<problem file="src/pages/Channels.tsx" line="5" column="33" code="2307">Cannot find module '~/modules/channels/evolution/ManageInstanceModal' or its corresponding type declarations.</problem>
+<problem file="src/App.tsx" line="9" column="24" code="2307">Cannot find module '~/layouts/MainLayout' or its corresponding type declarations.</problem>
+<problem file="src/App.tsx" line="22" column="24" code="2307">Cannot find module '~/lib/convex' or its corresponding type declarations.</problem>
+<problem file="src/layouts/MainLayout.tsx" line="12" column="24" code="2307">Cannot find module '~/components/SidebarNav' or its corresponding type declarations.</problem>
+<problem file="src/modules/channels/evolution/CreateInstanceModal.tsx" line="9" column="30" code="2307">Cannot find module '~/lib/evolution' or its corresponding type declarations.</problem>
+<problem file="src/modules/channels/evolution/ManageInstanceModal.tsx" line="8" column="30" code="2307">Cannot find module '~/lib/evolution' or its corresponding type declarations.</problem>
+</dyad-problem-report><think>[REDACTED]</think><dyad-write path="src/lib/evolution.ts" description="Evolution API client to resolve multiple TS2307 errors.">
+import axios, { AxiosResponse } from "axios";
+
+interface EvolutionResponse<T = any> {
+  status: string;
+  data: T;
 }
 
-interface Conversation {
-  id: string;
-  customerName: string;
-  customerAvatar: string;
-  lastMessage: string;
-  unread: number;
-  time: Date;
+const API_URL = import.meta.env.EVOLUTION_API_URL || "http://localhost:8080";
+const API_KEY = import.meta.env.EVOLUTION_API_KEY || "";
+
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    "Content-Type": "application/json",
+    "apikey": API_KEY,
+  },
+});
+
+export const evolutionApi = {
+  sendText: async (instanceName: string, number: string, text: string): Promise<AxiosResponse<EvolutionResponse>> =>
+    api.post(`/message/send<dyad-problem-report summary="8 problems">
+<problem file="src/pages/Chat.tsx" line="15" column="30" code="2307">Cannot find module '~/lib/evolution' or its corresponding type declarations.</problem>
+<problem file="src/pages/Channels.tsx" line="4" column="33" code="2307">Cannot find module '~/modules/channels/evolution/CreateInstanceModal' or its corresponding type declarations.</problem>
+<problem file="src/pages/Channels.tsx" line="5" column="33" code="2307">Cannot find module '~/modules/channels/evolution/ManageInstanceModal' or its corresponding type declarations.</problem>
+<problem file="src/App.tsx" line="9" column="24" code="2307">Cannot find module '~/layouts/MainLayout' or its corresponding type declarations.</problem>
+<problem file="src/App.tsx" line="22" column="24" code="2307">Cannot find module '~/lib/convex' or its corresponding type declarations.</problem>
+<problem file="src/layouts/MainLayout.tsx" line="12" column="24" code="2307">Cannot find module '~/components/SidebarNav' or its corresponding type declarations.</problem>
+<problem file="src/modules/channels/evolution/CreateInstanceModal.tsx" line="9" column="30" code="2307">Cannot find module '~/lib/evolution' or its corresponding type declarations.</problem>
+<problem file="src/modules/channels/evolution/ManageInstanceModal.tsx" line="8" column="30" code="2307">Cannot find module '~/lib/evolution' or its corresponding type declarations.</problem>
+</dyad-problem-report><think>[REDACTED]</think>Todos os 8 erros TS2307 são causados por falha na resolução do alias `~` (path mapping ausente no tsconfig). Criando/atualizando os arquivos ausentes e configurando `tsconfig.app.json` com `paths` para `~/*` → `["src/*"]` (compatível com `vite.config.ts`).
+
+<dyad-write path="tsconfig.app.json" description="Configurando paths para aliases ~ e @ resolver TS2307 em todos os imports.">
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["src/*"],
+      "@/*": ["src/*"]
+    },
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.jsx",
+    "src/**/*.js"
+  ]
 }
-
-const conversations: Conversation[] = [
-  { id: "1", customerName: "João Silva", customerAvatar: "/placeholder.svg", lastMessage: "Olá, bom dia!", unread: 2, time: new Date() },
-  { id: "2", customerName: "Maria Santos", customerAvatar: "/placeholder.svg", lastMessage: "Pedido #123", unread: 0, time: new Date(Date.now() - 3600000) },
-];
-
-const Chat = () => {
-  const { company } = useOutletContext() as any;
-  const [selectedConv, setSelectedConv] = useState<Conversation>(conversations[0]);
-  const [messages, setMessages] = useState<Message[]>([
-    { id: "1", text: "Olá! Como posso ajudar?", type: "text", sender: "customer", status: "read", time: new Date() },
-    { id: "2", text: "Bom dia, tenho uma dúvida sobre o produto.", type: "text", sender: "me", status: "read", time: new Date(Date.now() - 60000) },
-    { id: "3", type: "image", sender: "customer", status: "read", time: new Date(Date.now() - 120000), fileUrl: "/placeholder.svg" },
-  ]);
-  const [input, setInput] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const socketRef = useRef<ReturnType<typeof io> | null>(null);
-
-  useEffect(() => {
-    socketRef.current = io("http://localhost:8080");
-    socketRef.current.on("newMessage", (msg: Omit<Message, "id">) => {
-      setMessages((prev) => [...prev, { ...msg, id: Date.now().toString() }]);
-    });
-
-    const interval = setInterval(() => {
-      if (Math.random() > 0.7) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: Date.now().toString(),
-            text: "Nova mensagem recebida!",
-            type: "text",
-            sender: "customer",
-            status: "delivered",
-            time: new Date(),
-          },
-        ]);
-      }
-    }, 10000);
-
-    return () => {
-      socketRef.current?.disconnect();
-      clearInterval(interval);
-    };
-  }, []);
-
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
-
-  const sendMessage = async () => {
-    if (!input.trim() && !file) return;
-
-    const msg: Message = {
-      id: Date.now().toString(),
-      sender: "me",
-      status: "sending",
-      type: file ? (file.type.startsWith("image/") ? "image" : file.type.includes("video") ? "video" : "pdf") : "text",
-      time: new Date(), // Adicionado 'time' aqui
-    };
-
-    if (file) {
-      const fileType = file.type.startsWith("image/") ? "image" : file.type.includes("video") ? "video" : "pdf";
-      msg.fileUrl = URL.createObjectURL(file);
-
-      // Simular upload e obter URL real (para Evolution API)
-      const mediaUrl = "https://via.placeholder.com/150"; // Substituir por URL de upload real
-      if (import.meta.env.EVOLUTION_API_KEY) {
-        try {
-          await evolutionApi.sendMedia(company.instance, selectedConv.id, fileType as "image" | "video", mediaUrl, input.trim());
-        } catch (e) {
-          console.error("Erro envio de mídia:", e);
-        }
-      }
-    } else {
-      msg.text = input;
-      if (import.meta.env.EVOLUTION_API_KEY && input.trim()) {
-        try {
-          await evolutionApi.sendText(company.instance, selectedConv.id, input.trim());
-        } catch (e) {
-          console.error("Erro envio de texto:", e);
-        }
-      }
-    }
-
-    setMessages((prev) => [...prev, msg]);
-    setInput("");
-    setFile(null);
-
-    setTimeout(() => setMessages((prev) => prev.map((m) => (m.id === msg.id ? { ...m, status: "sent" } : m))), 1000);
-    setTimeout(() => setMessages((prev) => prev.map((m) => (m.id === msg.id ? { ...m, status: "delivered" } : m))), 2000);
-    setTimeout(() => setMessages((prev) => prev.map((m) => (m.id === msg.id ? { ...m, status: "read" } : m))), 3000);
-  };
-
-  const statusIcon = (status: Message["status"]) => {
-    switch (status) {
-      case "sending":
-        return <Clock className="h-4 w-4" />;
-      case "sent":
-        return <Check className="h-4 w-4" />;
-      case "delivered":
-        return <Check className="h-4 w-4" />;
-      case "read":
-        return <CheckCheck className="h-4 w-4" />;
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="flex h-full space-x-4">
-      <Card className="w-80 flex-shrink-0">
-        <CardHeader>
-          <CardTitle>Conversas</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <ScrollArea className="h-[calc(100vh-200px)]">
-            {conversations.map((conv) => (
-              <Button
-                key={conv.id}
-                variant={selectedConv.id === conv.id ? "secondary" : "ghost"}
-                className="w-full justify-start p-4 h-auto text-left"
-                onClick={() => setSelectedConv(conv)}
-              >
-                <Avatar className="h-10 w-10 mr-3">
-                  <AvatarImage src={conv.customerAvatar} />
-                  <AvatarFallback>{conv.customerName[0]}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 text-left min-w-0">
-                  <div className="font-medium truncate">{conv.customerName}</div>
-                  <div className="text-sm text-muted-foreground line-clamp-1">{conv.lastMessage}</div>
-                  {conv.unread > 0 && <Badge className="ml-auto">{conv.unread}</Badge>}
-                </div>
-              </Button>
-            ))}
-          </ScrollArea>
-        </CardContent>
-      </Card>
-
-      <div className="flex-1 flex flex-col">
-        <Card className="flex-1 flex flex-col">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <div className="flex items-center space-x-3">
-              <Avatar>
-                <AvatarImage src={selectedConv.customerAvatar} />
-                <AvatarFallback>{selectedConv.customerName[0]}</AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="font-semibold">{selectedConv.customerName}</div>
-                <div className="text-sm text-muted-foreground">Online</div>
-              </div>
-            </div>
-          </CardHeader>
-          <Separator />
-          <ScrollArea ref={scrollRef} className="flex-1 p-4">
-            {messages.map((msg) => (
-              <div key={msg.id} className={cn("flex mb-4", msg.sender === "me" ? "justify-end" : "justify-start")}>
-                <div
-                  className={cn(
-                    "max-w-xs lg:max-w-md p-3 rounded-2xl",
-                    msg.sender === "me" ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted"
-                  )}
-                >
-                  {msg.type === "text" && <p>{msg.text}</p>}
-                  {msg.type === "image" && <img src={msg.fileUrl || ""} alt="Imagem" className="max-w-full rounded-lg" />}
-                  {msg.type === "audio" && msg.fileUrl && <audio controls className="w-full"><source src={msg.fileUrl} /></audio>}
-                  {msg.type === "pdf" && msg.fileUrl && <iframe src={msg.fileUrl} className="w-full h-48" />}
-                  {msg.type === "video" && msg.fileUrl && <video controls className="w-full"><source src={msg.fileUrl} /></video>}
-                  <div className="flex items-center justify-end mt-1 text-xs text-muted-foreground">
-                    {msg.time.toLocaleTimeString()}
-                    {msg.sender === "me" && statusIcon(msg.status)}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </ScrollArea>
-          <Separator />
-          <div className="p-4 space-y-2">
-            <div className="flex space-x-2">
-              <Input
-                type="file"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
-                className="flex-1"
-                accept="image/*,audio/*,application/pdf,video/*"
-              />
-              <Button type="button" variant="ghost" size="icon">
-                <Paperclip className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="flex space-x-2">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Digite sua mensagem..."
-                className="flex-1 min-h-[44px] resize-none"
-                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), sendMessage())}
-              />
-              <Button onClick={sendMessage} disabled={!input.trim() && !file}>
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default Chat;

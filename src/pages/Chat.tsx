@@ -1,76 +1,141 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useOutlet<dyad-write path="src/pages/Chat.tsx" description="Corrigindo TS2741: adicionando 'time: new Date()' obrigatório ao objeto msg em sendMessage()">
-```tsx
-"use<dyad-write path="src/pages/Chat.tsx" description="Corrigindo TS2741: adicionando 'time: new Date()' obrigatório na função sendMessage()">
-"use client";
+import React, { useState, useEffect, useRef } from "react";
+import { useOutletContext } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-import { useState<dyad-problem-report summary="8 problems">
-<problem file="src/pages/Chat.tsx" line="15" column="30" code="2307">Cannot find module '~/lib/evolution' or its corresponding type declarations.</problem>
-<problem file="src/pages/Channels.tsx" line="4" column="33" code="2307">Cannot find module '~/modules/channels/evolution/CreateInstanceModal' or its corresponding type declarations.</problem>
-<problem file="src/pages/Channels.tsx" line="5" column="33" code="2307">Cannot find module '~/modules/channels/evolution/ManageInstanceModal' or its corresponding type declarations.</problem>
-<problem file="src/App.tsx" line="9" column="24" code="2307">Cannot find module '~/layouts/MainLayout' or its corresponding type declarations.</problem>
-<problem file="src/App.tsx" line="22" column="24" code="2307">Cannot find module '~/lib/convex' or its corresponding type declarations.</problem>
-<problem file="src/layouts/MainLayout.tsx" line="12" column="24" code="2307">Cannot find module '~/components/SidebarNav' or its corresponding type declarations.</problem>
-<problem file="src/modules/channels/evolution/CreateInstanceModal.tsx" line="9" column="30" code="2307">Cannot find module '~/lib/evolution' or its corresponding type declarations.</problem>
-<problem file="src/modules/channels/evolution/ManageInstanceModal.tsx" line="8" column="30" code="2307">Cannot find module '~/lib/evolution' or its corresponding type declarations.</problem>
-</dyad-problem-report><think>[REDACTED]</think><dyad-write path="src/lib/evolution.ts" description="Evolution API client to resolve multiple TS2307 errors.">
-import axios, { AxiosResponse } from "axios";
-
-interface EvolutionResponse<T = any> {
-  status: string;
-  data: T;
+interface Message {
+  id: string;
+  text: string;
+  sender: "me" | "other";
+  time: Date;
 }
 
-const API_URL = import.meta.env.EVOLUTION_API_URL || "http://localhost:8080";
-const API_KEY = import.meta.env.EVOLUTION_API_KEY || "";
+interface ContextType {
+  company: { id: string; name: string; instance: string };
+}
 
-const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    "Content-Type": "application/json",
-    "apikey": API_KEY,
-  },
-});
-
-export const evolutionApi = {
-  sendText: async (instanceName: string, number: string, text: string): Promise<AxiosResponse<EvolutionResponse>> =>
-    api.post(`/message/send<dyad-problem-report summary="8 problems">
-<problem file="src/pages/Chat.tsx" line="15" column="30" code="2307">Cannot find module '~/lib/evolution' or its corresponding type declarations.</problem>
-<problem file="src/pages/Channels.tsx" line="4" column="33" code="2307">Cannot find module '~/modules/channels/evolution/CreateInstanceModal' or its corresponding type declarations.</problem>
-<problem file="src/pages/Channels.tsx" line="5" column="33" code="2307">Cannot find module '~/modules/channels/evolution/ManageInstanceModal' or its corresponding type declarations.</problem>
-<problem file="src/App.tsx" line="9" column="24" code="2307">Cannot find module '~/layouts/MainLayout' or its corresponding type declarations.</problem>
-<problem file="src/App.tsx" line="22" column="24" code="2307">Cannot find module '~/lib/convex' or its corresponding type declarations.</problem>
-<problem file="src/layouts/MainLayout.tsx" line="12" column="24" code="2307">Cannot find module '~/components/SidebarNav' or its corresponding type declarations.</problem>
-<problem file="src/modules/channels/evolution/CreateInstanceModal.tsx" line="9" column="30" code="2307">Cannot find module '~/lib/evolution' or its corresponding type declarations.</problem>
-<problem file="src/modules/channels/evolution/ManageInstanceModal.tsx" line="8" column="30" code="2307">Cannot find module '~/lib/evolution' or its corresponding type declarations.</problem>
-</dyad-problem-report><think>[REDACTED]</think>Todos os 8 erros TS2307 são causados por falha na resolução do alias `~` (path mapping ausente no tsconfig). Criando/atualizando os arquivos ausentes e configurando `tsconfig.app.json` com `paths` para `~/*` → `["src/*"]` (compatível com `vite.config.ts`).
-
-<dyad-write path="tsconfig.app.json" description="Configurando paths para aliases ~ e @ resolver TS2307 em todos os imports.">
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "composite": true,
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "baseUrl": ".",
-    "paths": {
-      "~/*": ["src/*"],
-      "@/*": ["src/*"]
+const Chat = () => {
+  const { company } = useOutletContext<ContextType>();
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "1",
+      text: "Olá! Como posso ajudar você hoje?",
+      sender: "other",
+      time: new Date(Date.now() - 120000),
     },
-    "jsx": "react-jsx",
-    "allowJs": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "noEmit": true,
-    "skipLibCheck": true
-  },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.jsx",
-    "src/**/*.js"
-  ]
-}
+    {
+      id: "2",
+      text: "Oi, tudo bem? Quero saber sobre o produto X.",
+      sender: "me",
+      time: new Date(Date.now() - 60000),
+    },
+    {
+      id: "3",
+      text: "Claro! O produto X está disponível por R$ 99,90.",
+      sender: "other",
+      time: new Date(Date.now() - 30000),
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const sendMessage = () => {
+    if (!input.trim()) return;
+    const id = Date.now().toString();
+    const msg: Message = {
+      id,
+      text: input,
+      sender: "me" as const,
+      time: new Date(),
+    };
+    setMessages((prev) => [...prev, msg]);
+    setInput("");
+  };
+
+  return (
+    <div className="flex flex-col h-full max-w-4xl mx-auto">
+      <Card className="flex-1 flex flex-col shadow-lg">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center justify-between">
+            Chat - {company?.name || "Cliente"}
+            <div className="text-sm text-muted-foreground">
+              Instância: {company?.instance || "inst1"}
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0 flex-1 flex flex-col">
+          <ScrollArea className="flex-1 h-[calc(100vh-300px)] p-6 pr-2">
+            <div className="space-y-4 mb-4">
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={cn(
+                    "flex",
+                    msg.sender === "me" ? "justify-end" : "justify-start"
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "group flex flex-col max-w-xs lg:max-w-md p-4 rounded-2xl shadow",
+                      msg.sender === "me"
+                        ? "bg-primary text-primary-foreground rounded-br-sm"
+                        : "bg-muted rounded-bl-sm"
+                    )}
+                  >
+                    <div className="flex items-start space-x-2 mb-1">
+                      {msg.sender === "other" && (
+                        <Avatar className="h-8 w-8 flex-shrink-0">
+                          <AvatarImage src="/placeholder.svg" />
+                          <AvatarFallback className="text-xs">C</AvatarFallback>
+                        </Avatar>
+                      )}
+                      <p className="text-sm leading-relaxed">{msg.text}</p>
+                    </div>
+                    <p
+                      className={cn(
+                        "text-xs opacity-75 self-end",
+                        msg.sender === "me" ? "text-primary-foreground/80" : ""
+                      )}
+                    >
+                      {msg.time.toLocaleTimeString("pt-BR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              <div ref={scrollRef} />
+            </div>
+          </ScrollArea>
+          <div className="p-4 border-t bg-background">
+            <div className="flex space-x-2">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+                placeholder="Digite sua mensagem..."
+                className="flex-1 min-h-[44px] resize-none"
+              />
+              <Button onClick={sendMessage} size="icon" className="h-12 w-12 shrink-0">
+                →
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default Chat;

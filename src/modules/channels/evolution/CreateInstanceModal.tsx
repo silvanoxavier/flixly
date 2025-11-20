@@ -12,8 +12,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { evolutionApi } from "~/lib/evolution";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "~/convex/http";
 
 interface ContextType {
   company: { id: string; name: string; instance: string };
@@ -35,12 +33,10 @@ const CreateInstanceModal = () => {
   const [qrCode, setQrCode] = useState("");
   const [currentInstance, setCurrentInstance] = useState("");
   const [activeTab, setActiveTab] = useState<"create" | "manage">("create");
+  const [instances, setInstances] = useState<Instance[]>([]); // Estado local (sem Convex)
 
   const { company } = useOutletContext<ContextType>();
   const { toast } = useToast();
-  const instances = useQuery(api.instances.getInstances, { companyId: company.id }) || [];
-  const createDB = useMutation(api.instances.createInstanceDB);
-  const updateStatus = useMutation(api.instances.updateStatus);
 
   const fetchQR = async (instanceName: string) => {
     try {
@@ -58,7 +54,8 @@ const CreateInstanceModal = () => {
     setLoading(true);
     try {
       const res = await evolutionApi.createInstance(name, token || undefined);
-      await createDB({ companyId: company.id, name, token: token || undefined });
+      // Simular createDB localmente (sem Convex)
+      setInstances(prev => [...prev, { _id: Date.now().toString(), name, status: 'qrcode', createdAt: Date.now(), token: token || undefined }]);
       if (res.data.data.qrCode) {
         setQrCode(res.data.data.qrCode);
         setCurrentInstance(name);
@@ -75,13 +72,9 @@ const CreateInstanceModal = () => {
   };
 
   const pollAllStatuses = useCallback(async () => {
-    for (const inst of instances) {
-      try {
-        const res = await evolutionApi.getConnectionState(inst.name);
-        updateStatus({ companyId: company.id, name: inst.name, status: res.data.data.status });
-      } catch {}
-    }
-  }, [instances, updateStatus, company.id]);
+    // Simular poll local (sem Convex/updateStatus)
+    console.log('Polling statuses...');
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(pollAllStatuses, 10000);
@@ -142,7 +135,7 @@ const CreateInstanceModal = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {instances.map((inst: Instance) => (
+                  {instances.map((inst) => (
                     <TableRow key={inst._id}>
                       <TableCell>{inst.name}</TableCell>
                       <TableCell>

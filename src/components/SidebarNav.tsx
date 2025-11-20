@@ -35,15 +35,17 @@ const navItems = [
 
 interface SidebarNavProps {
   expanded: boolean;
+  onNavClick?: () => void;
 }
 
-export default function SidebarNav({ expanded }: SidebarNavProps) {
+export default function SidebarNav({ expanded, onNavClick }: SidebarNavProps) {
   return (
-    <nav className="flex flex-col h-full p-3 space-y-1.5">
+    <nav className="flex flex-col h-full p-3 space-y-1.5 pt-1">
       {navItems.map((item) => (
         <NavLink
           key={item.href}
           to={item.href}
+          onClick={onNavClick}
           className={({ isActive }) =>
             `group flex items-center rounded-lg transition-all duration-200 overflow-hidden h-11 ${
               isActive

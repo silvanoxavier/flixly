@@ -43,6 +43,7 @@ export default function MainLayout() {
 
   const handleMouseEnter = () => setSidebarExpanded(true);
   const handleMouseLeave = () => setTimeout(() => setSidebarExpanded(false), 300);
+  const handleNavClick = () => setSidebarExpanded(false);
 
   const sidebarWidth = sidebarExpanded ? 'w-64' : 'w-16';
   const headerPaddingTop = 'pt-16 md:pt-20';
@@ -97,23 +98,23 @@ export default function MainLayout() {
         </div>
       </header>
 
-      {/* Sidebar FIXED OVERLAY md+ (expande SOBRE content sem mover) */}
+      {/* Sidebar FIXED OVERLAY md+ (icons sempre, hover expande SOBRE, click colapsa) */}
       <aside 
-        className={`hidden md:fixed md:left-0 md:top-16 md:h-[calc(100vh-4rem)] md:pt-0 md:z-40 ${sidebarWidth} bg-card/95 border-r transition-all duration-500 ease-out shadow-lg overflow-hidden ${sidebarWidth === 'w-64' ? 'border-r-border/50' : ''}`}
+        className={`hidden md:fixed md:left-0 md:top-20 md:h-[calc(100vh-5rem)] md:z-40 ${sidebarWidth} bg-card/95 border-r transition-all duration-500 ease-out shadow-lg overflow-hidden`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <SidebarNav expanded={sidebarExpanded} />
+        <SidebarNav expanded={sidebarExpanded} onNavClick={handleNavClick} />
       </aside>
 
-      {/* Mobile Sheet */}
+      {/* Mobile Sheet (click fecha) */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className={`w-80 p-0 border-r bg-card max-w-xs ${headerPaddingTop} md:hidden`}>
-          <SidebarNav expanded={true} />
+          <SidebarNav expanded={true} onNavClick={() => setMobileOpen(false)} />
         </SheetContent>
       </Sheet>
 
-      {/* Main FULL WIDTH (sem ml/movimento, p-6 menos left space) */}
+      {/* Main FULL imóvel p-6 */}
       <div className={`flex-1 flex flex-col overflow-hidden ${headerPaddingTop}`}>
         <main className="flex-1 overflow-auto p-6">
           <Outlet context={{ company: selectedCompany }} />

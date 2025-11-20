@@ -39,17 +39,14 @@ export default function MainLayout() {
   const handleMouseLeave = () => setTimeout(() => setSidebarExpanded(false), 200);
 
   const sidebarWidth = sidebarExpanded ? 'w-64' : 'w-16';
-  const mainMargin = sidebarExpanded ? 'md:ml-64' : 'md:ml-16';
-  const headerHeight = 'h-16 md:h-20';
-  const sidebarPaddingTop = 'pt-16 md:pt-20';
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       {/* Header FIXED full width */}
-      <header className={`fixed top-0 left-0 right-0 ${headerHeight} border-b bg-card/90 backdrop-blur-sm z-50 flex items-center px-4 md:px-6`}>
+      <header className="fixed top-0 left-0 right-0 h-16 md:h-20 border-b bg-card/90 backdrop-blur-sm z-50 flex items-center px-4 md:px-6">
         {/* Left: Hamburger MOBILE ONLY (md:hidden) + Logo + Title */}
         <div className="flex items-center space-x-3 min-w-0 flex-1 max-w-md">
-          {/* Hamburger MOBILE ONLY (md:hidden) */}
+          {/* Hamburger MOBILE ONLY */}
           <Button 
             variant="ghost" 
             size="icon" 
@@ -111,25 +108,26 @@ export default function MainLayout() {
         </div>
       </header>
 
-      {/* Desktop/Tablet Sidebar: ÍCONES SEMPRE VISÍVEIS md+ (narrow w-16, hover w-64) */}
+      {/* Desktop/Tablet Sidebar: FIXED OVERLAY md+ (sem ocupar espaço main) */}
       <aside 
-        className={`hidden md:block ${sidebarWidth} bg-card/95 border-r transition-all duration-300 ease-out shadow-sm h-screen ${sidebarPaddingTop} overflow-hidden z-40`}
+        className={`hidden md:fixed md:top-16 md:h-[calc(100vh-4rem)] md:left-0 md:z-40 ${sidebarWidth} bg-card/95 border-r border-r-border/50 shadow-lg transition-all duration-300 ease-out overflow-hidden`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        style={{ top: '4rem' }} // h-16=4rem
       >
         <SidebarNav expanded={sidebarExpanded} />
       </aside>
 
-      {/* Mobile Sidebar Overlay (md:hidden) */}
+      {/* Mobile Sidebar Overlay */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className={`w-80 p-0 border-r bg-card max-w-xs ${sidebarPaddingTop} md:hidden`}>
+        <SheetContent side="left" className="w-80 p-0 border-r bg-card max-w-xs pt-16 md:pt-20 md:hidden">
           <SidebarNav expanded={true} />
         </SheetContent>
       </Sheet>
 
-      {/* Main content */}
-      <div className={`flex-1 flex flex-col overflow-hidden ${sidebarPaddingTop} ${mainMargin} md:transition-all md:duration-300 md:ease-out`}>
-        <main className="flex-1 overflow-auto p-0 md:p-6">
+      {/* Main content FULL WIDTH (sem ml sidebar) */}
+      <div className="flex-1 flex flex-col overflow-hidden pt-16 md:pt-20">
+        <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
           <Outlet context={{ company: selectedCompany }} />
         </main>
       </div>

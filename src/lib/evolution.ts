@@ -9,17 +9,8 @@ const api = axios.create({
 });
 
 export const evolutionApi = {
-  sendMessage: async (instance: string, chatId: string, message: any) => {
-    return api.post(`/message/sendText/${instance}`, { phone: chatId, message });
-  },
-  getQR: async (instance: string) => {
-    return api.get(`/instance/qr/${instance}`);
-  },
-  getStatus: async (instance: string) => {
-    return api.get(`/instance/status/${instance}`);
-  },
-  listInstances: async () => {
-    return api.get("/instance/listInstances");
-  },
-  // Adicione mais endpoints conforme necessário
+  sendMessage: async (instance: string, chatId: string, message: any) => api.post(`/message/sendText/${instance}`, { phone: chatId, message }),
+  getQR: async (instance: string) => api.get(`/instance/qr/${instance}`),
+  getStatus: async (instance: string) => api.get(`/instance/status/${instance}`),
+  listInstances: async () => api.get("/instance/listInstances"),
 };

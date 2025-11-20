@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ const Companies = () => (
           </TableRow>
         </TableHeader>
         <TableBody>
-          {companiesData.map(c => (
+          {companiesData.map((c) => (
             <TableRow key={c.id}>
               <TableCell>{c.name}</TableCell>
               <TableCell>{c.cnpj}</TableCell>
@@ -35,7 +36,9 @@ const Companies = () => (
               </TableCell>
               <TableCell>{c.instance}</TableCell>
               <TableCell>
-                <Button variant="outline" size="sm"><QrCode className="mr-1 h-4 w-4" /> QR Code</Button>
+                <Button variant="outline" size="sm">
+                  <QrCode className="mr-1 h-4 w-4" /> QR Code
+                </Button>
               </TableCell>
             </TableRow>
           ))}

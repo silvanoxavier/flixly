@@ -1,7 +1,7 @@
 "use client";
 
 import { NavLink } from "react-router-dom";
-import { MessageCircle, BarChart3, FileText, Package, Building, Users, Zap, LayoutList, Settings, Phone } from "lucide-react";
+import { MessageCircle, BarChart3, FileText, Package, Building, Users, Zap, LayoutList, Phone, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -21,14 +21,7 @@ const navItems = [
 const SidebarNav = () => (
   <nav className="p-4 space-y-2">
     {navItems.map(({ href, label, icon: Icon }) => (
-      <NavLink
-        key={href}
-        to={href}
-        className={({ isActive }) => cn(
-          "flex items-center space-x-2 w-full p-3 rounded-lg transition-colors",
-          isActive ? "bg-primary text-primary-foreground" : "hover:bg-accent"
-        )}
-      >
+      <NavLink key={href} to={href} className={({ isActive }) => cn("flex items-center space-x-2 w-full p-3 rounded-lg transition-colors", isActive ? "bg-primary text-primary-foreground" : "hover:bg-accent")}>
         <Icon className="h-5 w-5" />
         <span>{label}</span>
       </NavLink>

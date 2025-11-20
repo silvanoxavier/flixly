@@ -13,29 +13,18 @@ const CreateInstanceModal = () => {
   const [name, setName] = useState("");
 
   const createInstance = async () => {
-    // Chama Evolution API
     console.log("Criando instância:", name);
     setOpen(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button><Plus className="mr-2 h-4 w-4" /> Nova Instância</Button>
-      </DialogTrigger>
+      <DialogTrigger asChild><Button><Plus className="mr-2 h-4 w-4" /> Nova Instância</Button></DialogTrigger>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Criar Instância Evolution</DialogTitle>
-        </DialogHeader>
+        <DialogHeader><DialogTitle>Criar Instância Evolution</DialogTitle></DialogHeader>
         <div className="space-y-4">
-          <div>
-            <Label>Nome</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
-          </div>
-          <div>
-            <Label>Token API</Label>
-            <Input placeholder="Token da Evolution" />
-          </div>
+          <div><Label>Nome</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
+          <div><Label>Token API</Label><Input placeholder="Token da Evolution" /></div>
           <Button onClick={createInstance}>Gerar Instância</Button>
         </div>
       </DialogContent>

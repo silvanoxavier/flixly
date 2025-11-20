@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -23,13 +24,11 @@ const Customers = () => (
           </TableRow>
         </TableHeader>
         <TableBody>
-          {customersData.map(c => (
+          {customersData.map((c) => (
             <TableRow key={c.id}>
               <TableCell>{c.name}</TableCell>
               <TableCell>{c.phone}</TableCell>
-              <TableCell>
-                {c.tags.map(t => <Badge key={t}>{t}</Badge>)}
-              </TableCell>
+              <TableCell>{c.tags.map((t) => <Badge key={t}>{t}</Badge>)}</TableCell>
               <TableCell>{c.lastChat}</TableCell>
             </TableRow>
           ))}

@@ -2,24 +2,25 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useOutletContext } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Check, CheckCheck, Paperclip, Mic, Image, FileText as FileIcon, Clock, io } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Send, Check, CheckCheck, Paperclip, Clock } from "lucide-react";
 import { evolutionApi } from "~/lib/evolution";
-import ioClient from "socket.io-client";
+import io from "socket.io-client";
 
 interface Message {
   id: string;
   text?: string;
-  type: 'text' | 'image' | 'audio' | 'pdf';
-  sender: 'me' | 'customer';
-  status: 'sending' | 'sent' | 'delivered' | 'read';
+  type: "text" | "image" | "audio" | "pdf";
+  sender: "me" | "customer";
+  status: "sending" | "sent" | "delivered" | "read";
   time: Date;
   fileUrl?: string;
 }
@@ -40,35 +41,36 @@ const conversations: Conversation[] = [
 
 const Chat = () => {
   const { company } = useOutletContext() as any;
-  const [selectedConv, setSelectedConv] = useState(conversations[0]);
+  const [selectedConv, setSelectedConv] = useState<Conversation>(conversations[0]);
   const [messages, setMessages] = useState<Message[]>([
-    { id: "1", text: "Olá! Como posso ajudar?", type: 'text', sender: 'customer', status: 'read' as const, time: new Date() },
-    { id: "2", text: "Bom dia, tenho uma dúvida sobre o produto.", type: 'text', sender: 'me', status: 'read' as const, time: new Date(Date.now() - 60000) },
-    { id: "3", type: 'image', sender: 'customer', status: 'read' as const, time: new Date(Date.now() - 120000), fileUrl: "/placeholder.svg" },
+    { id: "1", text: "Olá! Como posso ajudar?", type: "text", sender: "customer", status: "read", time: new Date() },
+    { id: "2", text: "Bom dia, tenho uma dúvida sobre o produto.", type: "text", sender: "me", status: "read", time: new Date(Date.now() - 60000) },
+    { id: "3", type: "image", sender: "customer", status: "read", time: new Date(Date.now() - 120000), fileUrl: "/placeholder.svg" },
   ]);
   const [input, setInput] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const socketRef = useRef<any>(null);
+  const socketRef = useRef<ReturnType<typeof io> | null>(null);
 
   useEffect(() => {
-    // Mock Socket.IO realtime (substitua por Convex subscription ou real WS)
-    socketRef.current = ioClient("ws://localhost:8080"); // Ajuste URL real
-    socketRef.current.on("newMessage", (msg: Message) => {
-      setMessages(prev => [...prev, { ...msg, id: Date.now().toString() }]);
+    socketRef.current = io("http://localhost:8080");
+    socketRef.current.on("newMessage", (msg: Omit<Message, "id">) => {
+      setMessages((prev) => [...prev, { ...msg, id: Date.now().toString() }]);
     });
 
-    // Simulate incoming message
     const interval = setInterval(() => {
       if (Math.random() > 0.7) {
-        setMessages(prev => [...prev, {
-          id: Date.now().toString(),
-          text: "Nova mensagem recebida!",
-          type: 'text',
-          sender: 'customer',
-          status: 'delivered',
-          time: new Date(),
-        }]);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            text: "Nova mensagem recebida!",
+            type: "text",
+            sender: "customer",
+            status: "delivered",
+            time: new Date(),
+          },
+        ]);
       }
     }, 10000);
 
@@ -79,7 +81,7 @@ const Chat = () => {
   }, []);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
   const sendMessage = async () => {
@@ -87,50 +89,58 @@ const Chat = () => {
 
     const msg: Message = {
       id: Date.now().toString(),
-      ...(file ? { type: file.type.startsWith('image/') ? 'image' : file.type.includes('audio') ? 'audio' : 'pdf' as any, fileUrl: URL.createObjectURL(file) } : { text: input, type: 'text' }),
-      sender: 'me',
-      status: 'sending',
+      ...(file
+        ? {
+            type: (file.type.startsWith("image/") ? "image" : file.type.includes("audio") ? "audio" : "pdf") as Message["type"],
+            fileUrl: URL.createObjectURL(file),
+          }
+        : { text: input, type: "text" }),
+      sender: "me",
+      status: "sending",
       time: new Date(),
     };
 
-    setMessages(prev => [...prev, msg]);
+    setMessages((prev) => [...prev, msg]);
     setInput("");
     setFile(null);
 
-    // Simulate status update
-    setTimeout(() => setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'sent' } : m)), 1000);
-    setTimeout(() => setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'delivered' } : m)), 2000);
-    setTimeout(() => setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'read' } : m)), 3000);
+    setTimeout(() => setMessages((prev) => prev.map((m) => (m.id === msg.id ? { ...m, status: "sent" } : m))), 1000);
+    setTimeout(() => setMessages((prev) => prev.map((m) => (m.id === msg.id ? { ...m, status: "delivered" } : m))), 2000);
+    setTimeout(() => setMessages((prev) => prev.map((m) => (m.id === msg.id ? { ...m, status: "read" } : m))), 3000);
 
-    // Real send via Evolution (se envs set)
-    if (import.meta.env.VITE_EVOLUTION_TOKEN) {
+    if (import.meta.env.VITE_EVOLUTION_TOKEN && input.trim()) {
       try {
-        await evolutionApi.sendMessage(company.instance, selectedConv.id, { message: input });
+        await evolutionApi.sendMessage(company.instance, selectedConv.id, input.trim());
       } catch (e) {
         console.error("Erro envio:", e);
       }
     }
   };
 
-  const statusIcon = (status: Message['status']) => {
+  const statusIcon = (status: Message["status"]) => {
     switch (status) {
-      case 'sending': return <Clock className="h-4 w-4" />;
-      case 'sent': return <Check className="h-4 w-4" />;
-      case 'delivered': return <Check className="h-4 w-4" />;
-      case 'read': return <CheckCheck className="h-4 w-4" />;
+      case "sending":
+        return <Clock className="h-4 w-4" />;
+      case "sent":
+        return <Check className="h-4 w-4" />;
+      case "delivered":
+        return <Check className="h-4 w-4" />;
+      case "read":
+        return <CheckCheck className="h-4 w-4" />;
+      default:
+        return null;
     }
   };
 
   return (
     <div className="flex h-full space-x-4">
-      {/* Sidebar conversas */}
       <Card className="w-80 flex-shrink-0">
         <CardHeader>
           <CardTitle>Conversas</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <ScrollArea className="h-[calc(100vh-200px)]">
-            {conversations.map(conv => (
+            {conversations.map((conv) => (
               <Button
                 key={conv.id}
                 variant={selectedConv.id === conv.id ? "secondary" : "ghost"}
@@ -141,8 +151,8 @@ const Chat = () => {
                   <AvatarImage src={conv.customerAvatar} />
                   <AvatarFallback>{conv.customerName[0]}</AvatarFallback>
                 </Avatar>
-                <div className="flex-1 text-left">
-                  <div className="font-medium">{conv.customerName}</div>
+                <div className="flex-1 text-left min-w-0">
+                  <div className="font-medium truncate">{conv.customerName}</div>
                   <div className="text-sm text-muted-foreground line-clamp-1">{conv.lastMessage}</div>
                   {conv.unread > 0 && <Badge className="ml-auto">{conv.unread}</Badge>}
                 </div>
@@ -152,7 +162,6 @@ const Chat = () => {
         </CardContent>
       </Card>
 
-      {/* Chat area */}
       <div className="flex-1 flex flex-col">
         <Card className="flex-1 flex flex-col">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
@@ -169,16 +178,21 @@ const Chat = () => {
           </CardHeader>
           <Separator />
           <ScrollArea ref={scrollRef} className="flex-1 p-4">
-            {messages.map(msg => (
-              <div key={msg.id} className={cn("flex mb-4", msg.sender === 'me' ? "justify-end" : "justify-start")}>
-                <div className={cn("max-w-xs lg:max-w-md p-3 rounded-2xl", msg.sender === 'me' ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted")}>
-                  {msg.type === 'text' && <p>{msg.text}</p>}
-                  {msg.type === 'image' && <img src={msg.fileUrl} alt="Imagem" className="max-w-full rounded-lg" />}
-                  {msg.type === 'audio' && <audio controls className="w-full"><source src={msg.fileUrl} /></audio>}
-                  {msg.type === 'pdf' && <iframe src={msg.fileUrl} className="w-full h-48" />}
+            {messages.map((msg) => (
+              <div key={msg.id} className={cn("flex mb-4", msg.sender === "me" ? "justify-end" : "justify-start")}>
+                <div
+                  className={cn(
+                    "max-w-xs lg:max-w-md p-3 rounded-2xl",
+                    msg.sender === "me" ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted"
+                  )}
+                >
+                  {msg.type === "text" && <p>{msg.text}</p>}
+                  {msg.type === "image" && <img src={msg.fileUrl || ""} alt="Imagem" className="max-w-full rounded-lg" />}
+                  {msg.type === "audio" && msg.fileUrl && <audio controls className="w-full"><source src={msg.fileUrl} /></audio>}
+                  {msg.type === "pdf" && msg.fileUrl && <iframe src={msg.fileUrl} className="w-full h-48" />}
                   <div className="flex items-center justify-end mt-1 text-xs text-muted-foreground">
                     {msg.time.toLocaleTimeString()}
-                    {msg.sender === 'me' && statusIcon(msg.status)}
+                    {msg.sender === "me" && statusIcon(msg.status)}
                   </div>
                 </div>
               </div>
@@ -203,7 +217,7 @@ const Chat = () => {
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Digite sua mensagem..."
                 className="flex-1 min-h-[44px] resize-none"
-                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
+                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), sendMessage())}
               />
               <Button onClick={sendMessage} disabled={!input.trim() && !file}>
                 <Send className="h-4 w-4" />

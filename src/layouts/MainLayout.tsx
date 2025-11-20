@@ -17,10 +17,17 @@ const companies = [
 ];
 
 const pageTitles: Record<string, string> = {
+  "/": "Início",
   "/dashboard": "Dashboard",
+  "/companies": "Empresas",
   "/channels": "Canais",
   "/customers": "Clientes",
+  "/chat": "Chat",
   "/messages": "Mensagens",
+  "/catalog": "Catálogo",
+  "/kanban": "Kanban",
+  "/analytics": "Análises",
+  "/automations": "Automações",
   "/reports": "Relatórios",
   "/settings": "Configurações",
 };
@@ -103,7 +110,7 @@ export default function MainLayout() {
         </SheetContent>
       </Sheet>
 
-      {/* Main: pl-1 md+ (gap zero), transição suave */}
+      {/* Main */}
       <div className={`flex-1 flex flex-col overflow-hidden ${headerPaddingTop} ${mainMargin} md:transition-all md:duration-500 md:ease-out min-w-0`}>
         <main className="flex-1 overflow-auto p-4 md:pl-1 md:pr-6 md:py-6 lg:p-8 lg:pl-6">
           <Outlet context={{ company: selectedCompany }} />

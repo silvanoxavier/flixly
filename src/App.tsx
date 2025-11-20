@@ -1,38 +1,49 @@
 "use client";
 
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider } from 'next-themes';
-import MainLayout from './layouts/MainLayout';
-import Dashboard from './pages/Dashboard';
-import Channels from './pages/Channels';
-import Customers from './pages/Customers';
-import Messages from './pages/Messages';
-import Reports from './pages/Reports';
-import Settings from './pages/Settings';
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import MainLayout from "@/layouts/MainLayout";
+import Index from "@/pages/Index";
+import Dashboard from "@/pages/Dashboard";
+import Companies from "@/pages/Companies";
+import Channels from "@/pages/Channels";
+import Customers from "@/pages/Customers";
+import Chat from "@/pages/Chat";
+import Messages from "@/pages/Messages";
+import Catalog from "@/pages/Catalog";
+import Kanban from "@/pages/Kanban";
+import Analytics from "@/pages/Analytics";
+import Automations from "@/pages/Automations";
+import Reports from "@/pages/Reports";
+import Settings from "@/pages/Settings";
+import NotFound from "@/pages/NotFound";
 
-function App() {
-  return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="dark"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <Router>
-        <Routes>
-          <Route element={<MainLayout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/channels" element={<Channels />} />
-            <Route path="/customers" element={<Customers />} />
-            <Route path="/messages" element={<Messages />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/settings" element={<Settings />} />
-          </Route>
-        </Routes>
-      </Router>
-    </ThemeProvider>
-  );
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <MainLayout />,
+    errorElement: <NotFound />,
+    children: [
+      { index: true, element: <Index /> },
+      { path: "dashboard", element: <Dashboard /> },
+      { path: "companies", element: <Companies /> },
+      { path: "channels", element: <Channels /> },
+      { path: "customers", element: <Customers /> },
+      { path: "chat", element: <Chat /> },
+      { path: "messages", element: <Messages /> },
+      { path: "catalog", element: <Catalog /> },
+      { path: "kanban", element: <Kanban /> },
+      { path: "analytics", element: <Analytics /> },
+      { path: "automations", element: <Automations /> },
+      { path: "reports", element: <Reports /> },
+      { path: "settings", element: <Settings /> },
+    ],
+  },
+  {
+    path: "*",
+    element: <NotFound />,
+  },
+]);
+
+export default function App() {
+  return <RouterProvider router={router} />;
 }
-
-export default App;

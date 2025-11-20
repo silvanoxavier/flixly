@@ -18,7 +18,7 @@ import io from "socket.io-client";
 interface Message {
   id: string;
   text?: string;
-  type: "text" | "image" | "audio" | "pdf";
+  type: "text" | "image" | "audio" | "pdf" | "video"; // Adicionado 'video' aqui
   sender: "me" | "customer";
   status: "sending" | "sent" | "delivered" | "read";
   time: Date;
@@ -89,16 +89,34 @@ const Chat = () => {
 
     const msg: Message = {
       id: Date.now().toString(),
-      ...(file
-        ? {
-            type: (file.type.startsWith("image/") ? "image" : file.type.includes("audio") ? "audio" : "pdf") as Message["type"],
-            fileUrl: URL.createObjectURL(file),
-          }
-        : { text: input, type: "text" }),
       sender: "me",
       status: "sending",
-      time: new Date(),
+      type: file ? (file.type.startsWith("image/") ? "image" : file.type.includes("video") ? "video" : "pdf") : "text",
     };
+
+    if (file) {
+      const fileType = file.type.startsWith("image/") ? "image" : file.type.includes("video") ? "video" : "pdf";
+      msg.fileUrl = URL.createObjectURL(file);
+
+      // Simular upload e obter URL real (para Evolution API)
+      const mediaUrl = "https://via.placeholder.com/150"; // Substituir por URL de upload real
+      if (import.meta.env.EVOLUTION_API_KEY) {
+        try {
+          await evolutionApi.sendMedia(company.instance, selectedConv.id, fileType as "image" | "video", mediaUrl, input.trim());
+        } catch (e) {
+          console.error("Erro envio de mídia:", e);
+        }
+      }
+    } else {
+      msg.text = input;
+      if (import.meta.env.EVOLUTION_API_KEY && input.trim()) {
+        try {
+          await evolutionApi.sendText(company.instance, selectedConv.id, input.trim());
+        } catch (e) {
+          console.error("Erro envio de texto:", e);
+        }
+      }
+    }
 
     setMessages((prev) => [...prev, msg]);
     setInput("");
@@ -107,14 +125,6 @@ const Chat = () => {
     setTimeout(() => setMessages((prev) => prev.map((m) => (m.id === msg.id ? { ...m, status: "sent" } : m))), 1000);
     setTimeout(() => setMessages((prev) => prev.map((m) => (m.id === msg.id ? { ...m, status: "delivered" } : m))), 2000);
     setTimeout(() => setMessages((prev) => prev.map((m) => (m.id === msg.id ? { ...m, status: "read" } : m))), 3000);
-
-    if (import.meta.env.VITE_EVOLUTION_TOKEN && input.trim()) {
-      try {
-        await evolutionApi.sendMessage(company.instance, selectedConv.id, input.trim());
-      } catch (e) {
-        console.error("Erro envio:", e);
-      }
-    }
   };
 
   const statusIcon = (status: Message["status"]) => {
@@ -190,6 +200,7 @@ const Chat = () => {
                   {msg.type === "image" && <img src={msg.fileUrl || ""} alt="Imagem" className="max-w-full rounded-lg" />}
                   {msg.type === "audio" && msg.fileUrl && <audio controls className="w-full"><source src={msg.fileUrl} /></audio>}
                   {msg.type === "pdf" && msg.fileUrl && <iframe src={msg.fileUrl} className="w-full h-48" />}
+                  {msg.type === "video" && msg.fileUrl && <video controls className="w-full"><source src={msg.fileUrl} /></video>}
                   <div className="flex items-center justify-end mt-1 text-xs text-muted-foreground">
                     {msg.time.toLocaleTimeString()}
                     {msg.sender === "me" && statusIcon(msg.status)}
@@ -205,7 +216,7 @@ const Chat = () => {
                 type="file"
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
                 className="flex-1"
-                accept="image/*,audio/*,application/pdf"
+                accept="image/*,audio/*,application/pdf,video/*"
               />
               <Button type="button" variant="ghost" size="icon">
                 <Paperclip className="h-4 w-4" />

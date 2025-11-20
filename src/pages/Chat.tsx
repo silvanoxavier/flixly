@@ -18,7 +18,7 @@ import io from "socket.io-client";
 interface Message {
   id: string;
   text?: string;
-  type: "text" | "image" | "audio" | "pdf" | "video"; // Adicionado 'video' aqui
+  type: "text" | "image" | "audio" | "pdf" | "video";
   sender: "me" | "customer";
   status: "sending" | "sent" | "delivered" | "read";
   time: Date;
@@ -92,6 +92,7 @@ const Chat = () => {
       sender: "me",
       status: "sending",
       type: file ? (file.type.startsWith("image/") ? "image" : file.type.includes("video") ? "video" : "pdf") : "text",
+      time: new Date(), // Adicionado 'time' aqui
     };
 
     if (file) {

@@ -33,63 +33,82 @@ export default function MainLayout() {
   const location = useLocation();
   const currentTitle = pageTitles[location.pathname as keyof typeof pageTitles] || "Flixly";
 
+  const HEADER_HEIGHT = "16"; // h-16 md:h-20
+
   return (
-    <div className="flex h-screen bg-background">
-      {/* Sidebar Overlay SEMPRE (desktop + mobile) */}
+    <div className="flex h-screen bg-background overflow-hidden">
+      {/* Header FIXED full width top-0 */}
+      <header className={`fixed top-0 left-0 right-0 h-${HEADER_HEIGHT} md:h-20 border-b bg-card/80 backdrop-blur-sm z-50 flex items-center px-4 md:px-6`}>
+        {/* Left: Logo Flixly + Title (hidden mobile) + Hamburger */}
+        <div className="flex items-center space-x-3 min-w-0 flex-1 max-w-md">
+          {/* Logo Flixly */}
+          <div className="flex items-center space-x-2">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary to-green-500 rounded-xl flex items-center justify-center shadow-lg">
+              <span className="font-black text-lg md:text-xl text-primary-foreground tracking-tight">F</span>
+            </div>
+            <div className="hidden md:block">
+              <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">Flixly</h1>
+            </div>
+          </div>
+          {/* Title */}
+          <h2 className="text-lg font-semibold text-foreground truncate hidden md:block ml-2">{currentTitle}</h2>
+          {/* Hamburger (sempre visível) */}
+          <SheetTrigger asChild className="ml-auto md:ml-4">
+            <Button variant="ghost" size="icon">
+              <Menu className="h-6 w-6" />
+            </Button>
+          </SheetTrigger>
+        </div>
+
+        {/* Center: Search full flex-1 */}
+        <div className="flex-1 max-w-2xl mx-4 hidden md:flex">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Pesquisar mensagens, clientes..."
+              className="pl-10 w-full h-12 rounded-full"
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Right: Company Select + Theme */}
+        <div className="flex items-center space-x-2 min-w-0 flex-1 max-w-md justify-end">
+          <Select value={selectedCompany.id} onValueChange={(id) => setSelectedCompany(companies.find(c => c.id === id)!)}>
+            <SelectTrigger className="w-44 md:w-48 h-12">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {companies.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="default" size="icon" className="h-12 w-12">
+                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                <span className="sr-only">Toggle theme</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setTheme("light")}><Sun className="mr-2 h-4 w-4" /> Claro</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("dark")}><Moon className="mr-2 h-4 w-4" /> Escuro</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("system")}><Monitor className="mr-2 h-4 w-4" /> Sistema</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </header>
+
+      {/* Sidebar Overlay (conteúdo começa ABAIXO header) */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetTrigger className="p-4 md:p-6 fixed z-50 top-0 left-0 md:relative md:z-auto">
-          <Menu className="h-6 w-6 text-foreground" />
-        </SheetTrigger>
-        <SheetContent side="left" className="w-80 p-0 border-r bg-card max-w-xs">
+        <SheetContent side="left" className={`w-80 p-0 border-r bg-card max-w-xs pt-${HEADER_HEIGHT} md:pt-20`}>
           <SidebarNav />
         </SheetContent>
       </Sheet>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden ml-0 md:ml-0">
-        {/* Header MARROM (search global + company + theme) */}
-        <header className="border-b bg-card/80 backdrop-blur-sm p-4 md:p-6 flex items-center justify-between sticky top-0 z-40">
-          <div className="flex items-center space-x-4 flex-1 max-w-md">
-            <h2 className="text-xl font-semibold text-foreground hidden md:block">{currentTitle}</h2>
-          </div>
-          <div className="flex items-center space-x-2 flex-1 max-w-2xl mx-8">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Pesquisar mensagens, clientes..."
-                className="pl-10 w-full"
-                value={globalSearch}
-                onChange={(e) => setGlobalSearch(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Select value={selectedCompany.id} onValueChange={(id) => setSelectedCompany(companies.find(c => c.id === id)!)}>
-              <SelectTrigger className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {companies.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="default" size="icon">
-                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                  <span className="sr-only">Toggle theme</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setTheme("light")}><Sun className="mr-2 h-4 w-4" /> Claro</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")}><Moon className="mr-2 h-4 w-4" /> Escuro</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("system")}><Monitor className="mr-2 h-4 w-4" /> Sistema</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </header>
-
-        {/* Content */}
+      {/* Main content (começa ABAIXO header) */}
+      <div className={`flex-1 flex flex-col overflow-hidden pt-${HEADER_HEIGHT} md:pt-20 ml-0`}>
         <main className="flex-1 overflow-auto p-0 md:p-6">
           <Outlet context={{ company: selectedCompany }} />
         </main>

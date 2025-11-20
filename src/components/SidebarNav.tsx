@@ -19,23 +19,35 @@ const navItems = [
   { href: "/settings", label: "Configurações", icon: Settings },
 ];
 
-export default function SidebarNav() {
+interface SidebarNavProps {
+  expanded: boolean;
+}
+
+export default function SidebarNav({ expanded }: SidebarNavProps) {
   return (
-    <nav className="flex-1 p-4 space-y-2">
+    <nav className="flex flex-col h-full p-2 md:p-4 space-y-2 pt-2">
       {navItems.map((item) => (
         <NavLink
           key={item.href}
           to={item.href}
           className={({ isActive }) =>
-            `flex items-center space-x-3 p-3 rounded-lg transition-colors w-full ${
+            `group flex items-center p-3 rounded-lg transition-all duration-200 overflow-hidden ${
               isActive
-                ? "bg-primary text-primary-foreground font-medium"
+                ? "bg-primary text-primary-foreground shadow-md"
                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-            }`
+            } ${expanded ? 'space-x-3 pl-3' : 'justify-center pl-2'}`
           }
         >
-          <item.icon className="h-5 w-5" />
-          <span>{item.label}</span>
+          <item.icon className={`h-5 w-5 flex-shrink-0 transition-transform ${expanded ? 'group-hover:scale-110' : ''}`} />
+          <span 
+            className={`font-medium whitespace-nowrap transition-all duration-300 ${
+              expanded 
+                ? 'opacity-100 translate-x-0 ml-3' 
+                : 'opacity-0 scale-75 -translate-x-4 w-0 ml-0'
+            }`}
+          >
+            {item.label}
+          </span>
         </NavLink>
       ))}
     </nav>

@@ -28,17 +28,31 @@ const pageTitles: Record<string, string> = {
 export default function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const { setTheme } = useTheme();
   const [selectedCompany, setSelectedCompany] = useState(companies[0]);
   const location = useLocation();
   const currentTitle = pageTitles[location.pathname as keyof typeof pageTitles] || "Flixly";
 
+  const sidebarWidth = sidebarExpanded ? 'w-64' : 'w-16';
+  const mainMargin = sidebarExpanded ? 'lg:ml-64' : 'lg:ml-16';
+  const headerHeight = 'h-16 md:h-20';
+
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      {/* Header FIXED full width top-0 */}
-      <header className="fixed top-0 left-0 right-0 h-16 md:h-20 border-b bg-card/80 backdrop-blur-sm z-50 flex items-center px-4 md:px-6">
-        {/* Left: Logo Flixly + Title (hidden mobile) + Hamburger */}
+      {/* Header FIXED full width */}
+      <header className={`fixed top-0 left-0 right-0 ${headerHeight} border-b bg-card/80 backdrop-blur-sm z-50 flex items-center px-4 md:px-6`}>
+        {/* Left: Hamburger (lg:hidden) + Logo Flixly + Title */}
         <div className="flex items-center space-x-3 min-w-0 flex-1 max-w-md">
+          {/* Hamburger mobile only */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setMobileOpen(true)}
+            className="lg:hidden"
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
           {/* Logo Flixly */}
           <div className="flex items-center space-x-2">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary to-green-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -50,18 +64,9 @@ export default function MainLayout() {
           </div>
           {/* Title */}
           <h2 className="text-lg font-semibold text-foreground truncate hidden md:block ml-2">{currentTitle}</h2>
-          {/* Hamburger Button direto (sem SheetTrigger) */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => setMobileOpen(true)}
-            className="ml-auto md:ml-4"
-          >
-            <Menu className="h-6 w-6" />
-          </Button>
         </div>
 
-        {/* Center: Search full flex-1 */}
+        {/* Center: Search */}
         <div className="flex-1 max-w-2xl mx-4 hidden md:flex">
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -74,7 +79,7 @@ export default function MainLayout() {
           </div>
         </div>
 
-        {/* Right: Company Select + Theme */}
+        {/* Right: Company + Theme */}
         <div className="flex items-center space-x-2 min-w-0 flex-1 max-w-md justify-end">
           <Select value={selectedCompany.id} onValueChange={(id) => setSelectedCompany(companies.find(c => c.id === id)!)}>
             <SelectTrigger className="w-44 md:w-48 h-12">
@@ -101,15 +106,24 @@ export default function MainLayout() {
         </div>
       </header>
 
-      {/* Sidebar Overlay CONTROLLED (sem Trigger, só open/onOpenChange) */}
+      {/* Desktop Sidebar: Ícones SEMPRE visíveis (w-16), hover expande w-64 + labels */}
+      <aside 
+        className={`hidden lg:block ${sidebarWidth} bg-card border-r transition-all duration-300 ease-in-out overflow-hidden relative z-40 h-full`}
+        onMouseEnter={() => setSidebarExpanded(true)}
+        onMouseLeave={() => setSidebarExpanded(false)}
+      >
+        <SidebarNav expanded={sidebarExpanded} />
+      </aside>
+
+      {/* Mobile Sidebar Overlay */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-80 p-0 border-r bg-card max-w-xs pt-16 md:pt-20">
-          <SidebarNav />
+        <SheetContent side="left" className={`w-80 p-0 border-r bg-card max-w-xs pt-16 md:pt-20 lg:hidden`}>
+          <SidebarNav expanded={true} />
         </SheetContent>
       </Sheet>
 
-      {/* Main content (começa ABAIXO header) */}
-      <div className="flex-1 flex flex-col overflow-hidden pt-16 md:pt-20 ml-0">
+      {/* Main content: ml dinâmico baseado sidebar */}
+      <div className={`flex-1 flex flex-col overflow-hidden ${mainMargin} pt-16 md:pt-20 transition-all duration-300 ease-in-out`}>
         <main className="flex-1 overflow-auto p-0 md:p-6">
           <Outlet context={{ company: selectedCompany }} />
         </main>

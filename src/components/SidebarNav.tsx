@@ -2,7 +2,6 @@
 
 import { NavLink } from "react-router-dom";
 import { MessageCircle, BarChart3, FileText, Package, Building, Users, Zap, LayoutList, Phone, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navItems = [

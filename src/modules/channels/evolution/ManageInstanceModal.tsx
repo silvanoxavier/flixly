@@ -10,6 +10,7 @@ import { evolutionApi } from "~/lib/evolution";
 const ManageInstanceModal = () => {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<"connected" | string>("connected");
+  const [qr, setQr] = useState("");
 
   const fetchStatus = async () => {
     try {
@@ -25,11 +26,13 @@ const ManageInstanceModal = () => {
         <DialogHeader><DialogTitle>Instância inst1</DialogTitle></DialogHeader>
         <div className="space-y-4">
           <Badge variant={status === "connected" ? "default" : "secondary"}>{status}</Badge>
+          <div className="text-center p-4 bg-muted rounded-lg">{qr || "QR aqui"}</div>
           <div className="flex space-x-2">
             <Button variant="outline" size="sm" onClick={fetchStatus}><RefreshCw className="mr-1 h-4 w-4" /> Status</Button>
             <Button variant="outline" size="sm"><QrCode className="mr-1 h-4 w-4" /> QR</Button>
             <Button variant="outline" size="sm"><Power className="mr-1 h-4 w-4" /> Reiniciar</Button>
           </div>
+          <div className="text-sm text-muted-foreground">Logs: Mensagens enviadas/recebidas aqui.</div>
         </div>
       </DialogContent>
     </Dialog>

@@ -4,10 +4,11 @@ import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Sun, Moon, Monitor } from "lucide-react";
+import { Menu, Search, Sun, Moon, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import SidebarNav from "~/components/SidebarNav";
 
 const companies = [
@@ -16,7 +17,6 @@ const companies = [
 ];
 
 const pageTitles: Record<string, string> = {
-  "/": "Dashboard",
   "/dashboard": "Dashboard",
   "/channels": "Canais",
   "/customers": "Clientes",
@@ -27,40 +27,41 @@ const pageTitles: Record<string, string> = {
 
 export default function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [globalSearch, setGlobalSearch] = useState("");
   const { setTheme } = useTheme();
   const [selectedCompany, setSelectedCompany] = useState(companies[0]);
   const location = useLocation();
-  const currentTitle = pageTitles[location.pathname as keyof typeof pageTitles] || "Dashboard";
+  const currentTitle = pageTitles[location.pathname as keyof typeof pageTitles] || "Flixly";
 
   return (
     <div className="flex h-screen bg-background">
-      {/* Sidebar Mobile */}
+      {/* Sidebar Overlay SEMPRE (desktop + mobile) */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetTrigger className="md:hidden p-4">
-          <Menu className="h-6 w-6" />
+        <SheetTrigger className="p-4 md:p-6 fixed z-50 top-0 left-0 md:relative md:z-auto">
+          <Menu className="h-6 w-6 text-foreground" />
         </SheetTrigger>
-        <SheetContent side="left" className="w-64 p-0 border-r">
+        <SheetContent side="left" className="w-80 p-0 border-r bg-card max-w-xs">
           <SidebarNav />
         </SheetContent>
       </Sheet>
-      
-      {/* Sidebar Desktop */}
-      <aside className="hidden md:block w-64 border-r bg-card">
-        <div className="p-4 border-b">
-          <h1 className="text-xl font-bold text-foreground">Flixly</h1>
-        </div>
-        <SidebarNav />
-      </aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="border-b bg-card p-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(true)}>
-              <Menu className="h-5 w-5" />
-            </Button>
-            <h2 className="text-xl font-semibold text-foreground">{currentTitle}</h2>
+      <div className="flex-1 flex flex-col overflow-hidden ml-0 md:ml-0">
+        {/* Header MARROM (search global + company + theme) */}
+        <header className="border-b bg-card/80 backdrop-blur-sm p-4 md:p-6 flex items-center justify-between sticky top-0 z-40">
+          <div className="flex items-center space-x-4 flex-1 max-w-md">
+            <h2 className="text-xl font-semibold text-foreground hidden md:block">{currentTitle}</h2>
+          </div>
+          <div className="flex items-center space-x-2 flex-1 max-w-2xl mx-8">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Pesquisar mensagens, clientes..."
+                className="pl-10 w-full"
+                value={globalSearch}
+                onChange={(e) => setGlobalSearch(e.target.value)}
+              />
+            </div>
           </div>
           <div className="flex items-center space-x-2">
             <Select value={selectedCompany.id} onValueChange={(id) => setSelectedCompany(companies.find(c => c.id === id)!)}>
@@ -71,8 +72,6 @@ export default function MainLayout() {
                 {companies.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
-            
-            {/* Theme Switcher */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="default" size="icon">
@@ -82,22 +81,16 @@ export default function MainLayout() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setTheme("light")}>
-                  <Sun className="mr-2 h-4 w-4" /> Claro
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")}>
-                  <Moon className="mr-2 h-4 w-4" /> Escuro
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("system")}>
-                  <Monitor className="mr-2 h-4 w-4" /> Sistema
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("light")}><Sun className="mr-2 h-4 w-4" /> Claro</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("dark")}><Moon className="mr-2 h-4 w-4" /> Escuro</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("system")}><Monitor className="mr-2 h-4 w-4" /> Sistema</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-auto p-0 md:p-6">
           <Outlet context={{ company: selectedCompany }} />
         </main>
       </div>

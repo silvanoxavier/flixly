@@ -5,7 +5,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Menu, Search, Sun, Moon, Monitor } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "../providers/ThemeProvider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";

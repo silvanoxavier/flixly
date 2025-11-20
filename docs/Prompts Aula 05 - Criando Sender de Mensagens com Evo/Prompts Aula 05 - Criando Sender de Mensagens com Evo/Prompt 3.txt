@@ -1,0 +1,30 @@
+Prompt 3
+
+Quero criar uma página chamada Enviar Mensagem
+
+Nessa página precisa existir um título: Enviar Mensagem, com uma pequena descrição logo abaixo: Use essa tela para contactar sua base. Logo abaixo da descrição uma box para configuração da mensagem que será enviada para os Leads.
+
+Nessa box devem existir os seguintes campos:
+
+1 switch que muda o envio de mensagem de 1 único numero ou para todos os Leads.
+
+1 campo para inserir a mensagem
+
+1 campo para inserir o numero do Lead caso o Switch esteja com envio de apenas 1 mensagem selecionado
+
+1 Campo para Definir quanto tempo de delay deve existir entre o envio da mensagem para cada usuário, caso todos os Leads estejam selecionados.
+
+1 botão para envio da mensagem
+
+Quando o usuário clicar para realizar o envio da mensagem, o seguinte request a API da Evolution deve ser feito:
+
+curl --request POST \
+  --url https://{server-url}/message/sendText/{instance} \
+  --header 'Content-Type: application/json' \
+  --header 'apikey: <api-key>' \
+  --data '{
+  "number": "<string>",
+  "text": "<string>",
+}'
+
+Dados como server url, instance e api key a aplicação pode ter acesso realizar um request ao table ID BASEROW_EVO_TABLE_ID que está salvo no arquivo .env.local da aplicação, já o number é o numero do usuário da base de Leads que vai receber a mensagem ou seja pode ter sido inserido manualmente pelo usuário ou coletado da table BASEROW_LEADS_TABLE_ID e o text é a mensagem inserida pelo usuário no campo de inserção de mensagem na página Enviar Mensagem

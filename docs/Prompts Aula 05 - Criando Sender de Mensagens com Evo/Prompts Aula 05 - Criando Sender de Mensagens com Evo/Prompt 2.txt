@@ -1,0 +1,43 @@
+Prompt 2
+
+Agora vamos trabalhar com as páginas /leads /dashboard
+
+Primeiro a página Leads, para listagem de Leads será necessário realizar um request utilizando os dados salvos no arquivo .env.local da Codebase da aplicação.
+
+Deve ser feito um get e a listagem de todos os usuários presentes na Table BASEROW_LEADS_TABLE_ID.
+
+Os campos que retornam o Numero e o Nome do Lead em cada iten na resposta da API da Evolution são:
+
+Nome do Lead - Chave Nome
+
+Numero do Lead - Chave Numero
+
+Portanto, sempre que o usuário acessar a página /leads esse request a API a Table BASEROW_LEADS_TABLE_ID deve ser executado e os Leads devem ser listados dentro da página.
+
+Lembrando que a página /leads já possui uma estética propria que deve ser preservadas e apenas populada com as informações que são retornadas pela API da Evolution.
+
+Agora a página /dashboard
+
+Aqui são listados o total de Leads e Total de Conversas, para encontrar essas iformações em tempo real será necessário fazer 2 diferentes requests a API da Evolution:
+
+1 request, para coletar todas as conversas com a instancia, será necessário realizar um request utilizando os dados salvos no DB do Baserow que você tem acesso por meio do seu arquivo .env.local na Table BASEROW_EVO_TABLE_ID, o request ao baserow irá te retornar as váriaveis necessárias para preencher os seguintes campos de um request que pode ser feito para a API da Evolution para retornar todos as Conversas que estão relacionados a uma instancia::
+
+curl --request POST \
+  --url https://{server-url}/chat/findContacts/{instance} \
+  --header 'Content-Type: application/json' \
+  --header 'apikey: <api-key>' \
+  --data '{
+  "where": {
+    "id": "<string>"
+  }
+}'
+
+
+
+Esse request retorna o total de conversas, importante lembrar que não é retornado na resposta do request o numero exato de conversas existentes, portanto para determinar esse valor a aplicação deve contar a quantidade de itens existentes na resposta da API.
+
+2 request deve ser realizado novamente o Request a Table BASEROW_LEADS_TABLE_ID e coletado o id do ultimo iten retornado pelo request a API do Baserow, esse id do ultimo iten da resposta da API é a quantidade total de Leads existentes.
+
+Esse request retorna o total de Leads.
+
+Ambos o requests irão retornar uma lista de itens, porém não retornam o valor total em nenhum local, portanto para determiner o total de contatos e o total de conversas será necessário que a aplicação conte a quantidade de itens presentes na resposta da API.

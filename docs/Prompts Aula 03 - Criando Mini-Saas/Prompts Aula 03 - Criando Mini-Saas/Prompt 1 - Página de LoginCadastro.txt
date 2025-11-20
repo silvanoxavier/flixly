@@ -1,0 +1,85 @@
+Prompt 1 - Página de Login/Cadastro
+
+Quero criar uma página de Login/Cadastro para a minha aplicação, os usuários devem ser capazes de criar contas por conta propria e se cadastrarem na aplicação.
+
+Para a estética da página quero que você use como base esse lib do shadcn: npx shadcn@latest add login-02
+
+Porém não quero login por meio de redes sociais ou Google, apenas email e senha comum.
+
+Para a lógica de criação de usuários e login preciso que você crie dentro da sua codebase um arquivo .env.local, onde você vai salvar as seguintes informações referents ao DB onde os dados referentes a contas de usuários ficaram salvos:
+
+BASEROW_TABLE_ID=ID_DA_TABLE
+
+BASEROW_BASE_URL=URL_DO_SEU_BASEROW
+
+BASEROW_DATABASE_TOKEN=SEU_DATABASE_TOKEN
+
+Com essas informações que serão armazenadas no arquivo .env.local você possui todos os dados necessários para realizar requests ao meu Baserow e verificar na base de dados sempre que necessário, quando o usuário tentar acessar uma conta existente ou criar uma conta nova.
+
+A principal informação que deve ser usada como parâmetro de procura dentro do Baserow para verificar se o usuário já existe ou se ele não existe é a Row Email que é proveniente da resposta ao request do Baserow, e para cada situação uma resposta é esperada:
+
+Caso o usuário esteja tentando fazer Login:
+
+Se o email inserido na tela de login for encontrado e a senha condizer com a senha salva no Baserow o usuário acessa a plataforma.
+
+Se o email inserido na tela de login for encontrado e a senha inserida não condizer com a senha salva no Baserow uma mensagem de erro avisando sobre o problema deve ser retornada para o usuário.
+
+Se o email inserido na tela de login não for encontado, retorna uma mensagem de erro avisando o usuário sobre o problema.
+
+Caso o usuário esteja tentando criar uma conta:
+
+Caso o email inserido na criação da conta já exista dentro do Baserow, deve ser retornada uma mensagem ao usuário informando que uma conta com aquele email já existe no sistema e não é possível criar uma nova.
+
+Caso o email inserido na criação da conta não existe dentro do Baserow, os dados de cadastro do usuário devem ser salvos dentro do DB conforme os dados se encaixarem nas tabelas do Baserow, e depois dos dados serem salvos o usuário é redirecionado para a página de login.
+
+Importante citar que uma das informações que será retornada quando o request ao baserow for feito é Row Role, que determina se o usuário é um ADM ou usuário comum além de também determinar o nível de acesso dele na plataforma, esse parâmetro é importante e mais para frente vai determinar quais páginas o usuário que está fazendo login vai ver ao acessar a plataforma, portanto isso deve ficar associado ao usuário quando o login for bem sucedido.
+
+Por padrão quando um usuário criar uma conta a role dele deve ser COMMUM USER.
+
+Para realizar todas as ações necessárias como verificar dados salvos no Baserow e Criar dados dentro das Tables vou te enviar trechos da doc oficial para te ajudar a realizar cadas request quando necessário:
+
+Request para listar Dados:
+
+curl \
+-X GET \
+-H "Authorization: Token YOUR_DATABASE_TOKEN" \
+"https://baserow.seudominio.com/api/database/rows/table/BASEROW_TABLE_ID/?user_field_names=true"
+
+Request para coletar um dado especifico:
+
+curl \
+-X GET \
+-H "Authorization: Token YOUR_DATABASE_TOKEN" \
+"https://baserow.seudominio.com/api/database/rows/table/BASEROW_TABLE_ID/{row_id}/?user_field_names=true"
+
+Request para Criar um dado na Table:
+
+curl \
+-X POST \
+-H "Authorization: Token YOUR_DATABASE_TOKEN" \
+-H "Content-Type: application/json" \
+"https://baserow.seudominio.com/api/database/rows/table/BASEROW_TABLE_ID/?user_field_names=true" \
+--data '{
+    "Nome de Usuario": "string",
+    "Email": "string",
+    "Senha": "string",
+    "Role": "string",
+    "permissoes": "string"
+}'
+
+Request para atualizar um dado na Table (pode ser usado na mudança de senha por exemplo):
+
+curl \
+-X PATCH \
+-H "Authorization: Token YOUR_DATABASE_TOKEN" \
+-H "Content-Type: application/json" \
+"https://baserow.seudominio.com/api/database/rows/table/BASEROW_TABLE_ID/{row_id}/?user_field_names=true" \
+--data '{
+    "Nome de Usuario": "string",
+    "Email": "string",
+    "Senha": "string",
+    "Role": "string",
+    "permissoes": "string"
+}'
+
+Lembrando que os exemplos da doc estão em curl, adapte conforme necessário para se encaixarem e funcionarem corretamente na minha aplicação.

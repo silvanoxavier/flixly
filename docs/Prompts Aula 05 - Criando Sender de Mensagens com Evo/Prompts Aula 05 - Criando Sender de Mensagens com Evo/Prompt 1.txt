@@ -1,0 +1,59 @@
+Prompt 1
+
+Vamos trabalhar com a página /settings
+
+Nessa página existe a configuração de algumas váriaveis de uma API, preciso que essas váriaveis fiquem salvas em algum lugar, pra isso quero conectar essa página a um DB que eu possuo no Baserow, assim sempre que necessário a Plataforma pode fazer um request ao DB e verificar as variaveis que o usuário configurar na página /settings.
+
+Para se conectar ao DB do baserow onde as informações que o usuário inserir serão salvas você precisa criar um arquivo .env.local no projeto e inserir as seguinte váriaveis dentro dele:
+
+BASEROW_EVO_TABLE_ID=ID_DA_TABLE
+
+BASEROW_LEADS_TABLE_ID=ID_DA_TABLE
+
+BASEROW_BASE_URL=SUA_URL_DO_BASEROW
+
+BASEROW_DATABASE_TOKEN=SEU_DATABASE_TOKEN
+
+Para realizar todas as ações necessárias como verificar dados salvos no Baserow e Criar dados dentro das Tables vou te enviar trechos da doc oficial para te ajudar a realizar cada request quando necessário:
+
+Request para listar Dados na table BASEROW_EVO_TABLE_ID:
+
+curl \
+-X GET \
+-H "Authorization: Token YOUR_DATABASE_TOKEN" \
+"BASEROW_BASE_URL/api/database/fields/table/BASEROW_EVO_TABLE_ID/"
+
+Request para Criar um dado na Table BASEROW_EVO_TABLE_ID:
+
+curl \
+-X POST \
+-H "Authorization: Token YOUR_DATABASE_TOKEN" \
+-H "Content-Type: application/json" \
+"BASEROW_BASE_URL/api/database/rows/table/BASEROW_EVO_TABLE_ID/?user_field_names=true" \
+--data '{
+    "nome_da_instancia": "string",
+    "base_url": "string",
+    "api_key": "string"
+}'
+
+Request para atualizar um dado na Table BASEROW_EVO_TABLE_ID (Deve ser usado quando o usuário mudar os dados na página /settings, assim evitando a criação de múltiplas entradas no DB):
+
+curl \
+-X POST \
+-H "Authorization: Token YOUR_DATABASE_TOKEN" \
+-H "Content-Type: application/json" \
+"BASEROW_BASE_URL/api/database/rows/table/BASEROW_EVO_TABLE_ID/?user_field_names=true" \
+--data '{
+    "nome_da_instancia": "string",
+    "base_url": "string",
+    "api_key": "string"
+}'
+
+Request para listar Dados na table BASEROW_LEADS_TABLE_ID:
+
+curl \
+-X GET \
+-H "Authorization: Token YOUR_DATABASE_TOKEN" \
+"BASEROW_BASE_URL/api/database/rows/table/BASEROW_LEADS_TABLE_ID/{row_id}/?user_field_names=true"
+
+Lembrando que os exemplos da doc estão em curl, adapte conforme necessário para se encaixarem e funcionarem corretamente na minha aplicação.

@@ -1,0 +1,48 @@
+Prompt 2
+
+Agora quero trabalhar com a lógica da página de Login, levando em conta que na aplicação só é possivel fazer login, quero que para validar se as informações de login estão corretas a aplicação procure pelo usuário que está tentando realizer o login dentro de um DB do Baserow que eu possuo.
+
+Reveja a lógica da página de Login que você criou, entenda quais são os elementos que ela possue e trabalhe em cima deles implementando o que vou te pedir a seguir:
+
+O campo que deve ser procurado dentro dentro do DB para verificar se o usuário existe é o email, se o email for encontrado deve ser feita uma verificação para validar se a senha inserida é a mesma que a que está salva no DB.
+
+Caso o usuário seja encontrado e a senha esteja correta, ele deve ser redirecionado para a página Dashboard, que por hora deve ser apenas um placeholder sem conteúdo.
+
+Caso o usuário não seja encontrado, uma mensagem de erro deve aparecer no canto inferior direito da tela dizendo que o usuário não foi encontrado.
+
+Caso o usuário seja encontrado mais a senha esteja incorreta, uma mensagem de erro deve aparecer no canto inferior direito da tela dizendo que a senha está incorreta.
+
+Para se conectar ao DB do baserow onde os usuários estão armazenados e verificar se o usuário que está fazendo login existe, vou te enviar um trecho da doc do baserow e as informações necessárias para que você consiga montar um request functional para o Meu DB:
+
+Database token: SEU_DATABASE_TOKEN
+
+Baserow URL: SUA_ULR_DO_BASEROW
+
+Table ID: ID_DA_TABLE
+
+Rows da Table: Nome, Email, Senha
+
+O campo onde o email que é inserido pelo usuário na tela de login deve ser procurado é na Row Email, e a senha que deve ser comparada pode ser encontrada na Row Senha.
+
+Exemplo Authentication API:
+
+curl \
+-H "Authorization: Token YOUR_DATABASE_TOKEN" \
+"https://baserow.seudominio.com.br"
+
+Exemplo de List Fields da API:
+
+curl \
+-X GET \
+-H "Authorization: Token YOUR_DATABASE_TOKEN" \
+"https://baserow.seudominio.com.br/api/database/fields/table/ID_DA_TABLE/"
+
+Exemplo de Get Rows da API:
+
+curl \
+-X GET \
+-H "Authorization: Token YOUR_DATABASE_TOKEN" \
+"https://baserow.seudominio.com.br/api/database/rows/table/ID_DA_TABLE/{row_id}/?user_field_names=true"
+
+Lembrando que os exemplos de requests que estou te enviando estão em curl, altere da melhor maneira para se encaixar a minha aplicação.
+

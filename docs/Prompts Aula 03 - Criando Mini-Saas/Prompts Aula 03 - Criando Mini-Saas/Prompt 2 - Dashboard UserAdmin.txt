@@ -1,0 +1,29 @@
+ Prompt 2 - Dashboard User/Admin
+
+Quero criar uma Dashboard com estética parecida com a da seguinte lib do shadcn: npx shadcn@latest add sidebar-06
+
+Agora quero criar todas as páginas que irão existir na aplicação, será um total de 3 páginas:
+
+USER ACESS (Isso é apenas um título, uma separação para a Sidebar)
+Pagina Agents
+Pagina Planos
+
+BACKOFFICE (Isso é apenas um título, uma separação para a Sidebar)
+Página Usuários Ativos
+
+Quando um usuário realizar o login ele deve ser redirecionado para a página padrão da aplicação que será a página Agents.
+
+Quando o login for efetuado de a Role do usuário for ADM ele tem acesso aos conteúdos e páginas presents em BACKOFFICE, caso a role do usuário seja qualquer outra ele não vê essas opções e nem tem acesso a essas páginas.
+
+Vamos trabalhar agora com visual da página Agents, aqui deve existir um título: Agents e uma breve descrição: Aqui você ve todos os Agents disponiveis no seu plano de acesso.
+
+Logo abaixo da descrição deve existir uma box onde devem estar listados os Agents disponiveis para o usuário interagir, e quando um deles for selecionado deve ser aberta uma tela de conversa com o agent, crie uma agent de exemplo apenas para visualizar como eles vao ficar quando adicionados de verdade.
+
+Agora vamos trabalhar com a página planos, aqui você deve criar uma tela de seleção de planos com 3 Planos, onde quando o usuário clicar em um 1 plano ele será redirecionado para uma tela de compra, que no momento não vai ter uma função por si só, então apenas adicione Nessa tela um botão comprar plano que quando selecionado irá mudar a Role do usuário dentro do Baserow, a atualizar para COMMUM USER +1, COMMUM USER +2 OU COMMUM USER +3 dependendo é claro de qual plano o usuário seleciou na Página de Planos.
+
+Para o visual dessa página se baseie Nessa lib do Shadcn: 
+
+Por fim na página Usuário ativos quero que todos os usuário fiquem visiveis para o Admin quando ele acessar essa página, você pode coletar os usuários ativos na Plataforma na Table do baserow que é utilizada para controlar o Sistema de login da Plataforma, tudo que você precisa fazer é um get de todas as linhas e organizer os usuários salvos no Baserow em uma lista.
+
+
+

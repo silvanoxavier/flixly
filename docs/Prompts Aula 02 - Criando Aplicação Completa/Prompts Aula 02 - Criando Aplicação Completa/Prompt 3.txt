@@ -1,0 +1,19 @@
+Prompt 3
+
+Após o usuário realizar o Login na Plataforma quero que ele seja redirecionado para uma Página Dashboard com as seguintes 3 páginas listadas na Sidebar:
+
+Página Dashboard - Aqui é onde as informações gerais sobre os Leads serão listadas as informações que devem estar visiveis aqui são: quantidade de Leads, Quantidade de Conversas.
+
+Página Leads - Aqui é onde serão listados todos os Leads que eu possuo - Os leads devem ficar listados em formato de Tabela com as seguintes informações de cada Lead visiveis: Nome e Numero.
+
+Página Configurações - Aqui é onde o usuário vai definir as configurações da API que vai coletar os Leads em tempo real, portanto preciso de uma box onde eu possa configurar os seguintes pontos:
+
+Nome da Instancia
+
+Base URL
+
+API Key
+
+Lembre-se no momento quero trabalhar apenas com o visual das páginas, crie no máximo 3 exemplos visuais dos elementos presentes nas páginas onde for necessário, mais por hora não implemente nenhuma lógica de Funcionamento.
+
+Para te ajudar a construir a estética da página da Dashboard e da Sidebar vou te enviar um exemplo da Lib do Shadcn: npx shadcn@latest add sidebar-07

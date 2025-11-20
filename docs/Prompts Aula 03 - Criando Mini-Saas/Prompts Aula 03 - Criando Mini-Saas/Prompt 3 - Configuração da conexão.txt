@@ -1,0 +1,43 @@
+Prompt 3 - Configuração da conexão com n8n e Agents
+
+Agora vamos trabalhar com a página Agents, ela já possui um padrão visual e estético bem estabelecido, portanto verifique como ela está atualmente e adpte minhas proximas solitiações para que se encaixem no visual da página.
+
+Atualmente a página trabalha apenas com um Agent de exemplo visual, quero implementar um Agent que realmente funcione e que possa receber e responder mensagens enviadas a ele por meio da Plataforma.
+
+Para isso quero me conectar a um fluxo que possuo no n8n:
+
+Para isso adicione no arquivo .env.local  que existe dentro do meu projeto as seguinte váriveis para que seja possivel uma conexão com o meu Agent dentro do n8n:
+
+WEBHOOK_URL=URL_DO_SEU_WEBHOOK
+
+X-N8N-API-KEY=SUA_API_KEY_N8N
+
+ACCEPT=
+
+Essas informações são o suficiente para que você possa montar um request do tipo Post para o WebHook do meu fluxo no n8n e enviar a mensagem inserida pelo usuário na tela de conversa dentro da apicação para o meu Agent que está no n8n.
+
+Antes de realizar o request da API em body, você deve inserir a mensagem do usuário da seguinte maneira:
+
+[
+  {
+    "input_usuario": "INSIRA AQUI A MENSAGEM ENVIADA PELO USUARIO DENTRO DO CHAT COM O AGENT NO FRONTEND DA APLICACAO"
+  }
+]
+
+Apos realizar o request você receber uma resposta da API muito semelhante a seguinte:
+
+[
+  {
+    "output": "Olá! Em que posso ajudar você hoje?"
+  }
+]
+
+Retorne a resposta que recebeu da API como uma mensagem enviada pelo Agent dentro do chat para o usuário que está interagindo com ele, enviando no chat apenas o valor da chave output.
+
+Para te ajudar a montar o request vou te enviar um exemplo que já testei e sei que está funcionando perfeitamente para te ajudar a montar a requisição:
+
+curl -X POST '{{WEBHOOK_URL}}' \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'X-N8N-API-KEY: {{X-N8N-API-KEY}}' \
+  --data-raw '[{"input_usuario":"INSIRA AQUI A MENSAGEM ENVIADA PELO USUARIO DENTRO DO CHAT COM O AGENT NO FRONTEND DA APLICACAO"}]'

@@ -18,10 +18,12 @@ const api = axios.create({
 
 export const evolutionApi = {
   createInstance: async (
-    instanceName: string,
-    token?: string
+    name: string,
+    channel: string = "baileys",
+    token: string,
+    number?: string
   ): Promise<AxiosResponse<EvolutionResponse<{ qrCode?: string }>>> =>
-    api.post("/instance/create", { instanceName, token, qrcode: true }),
+    api.post("/instance/create", { name, channel, token, number, qrcode: true }),
 
   sendText: async (instanceName: string, number: string, text: string): Promise<AxiosResponse<EvolutionResponse>> =>
     api.post(`/message/sendText/${instanceName}`, { number, text }),

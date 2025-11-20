@@ -10,6 +10,7 @@ import { Plus, RefreshCw, QrCode } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { evolutionApi } from "~/lib/evolution";
 
@@ -20,7 +21,9 @@ interface ContextType {
 interface Instance {
   _id: string;
   name: string;
+  channel: string;
   status: string;
+  number?: string;
   createdAt: number;
   token?: string;
 }
@@ -28,12 +31,14 @@ interface Instance {
 const CreateInstanceModal = () => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  const [channel, setChannel] = useState("baileys");
   const [token, setToken] = useState("");
+  const [number, setNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [qrCode, setQrCode] = useState("");
   const [currentInstance, setCurrentInstance] = useState("");
   const [activeTab, setActiveTab] = useState<"create" | "manage">("create");
-  const [instances, setInstances] = useState<Instance[]>([]); // Estado local (sem Convex)
+  const [instances, setInstances] = useState<Instance[]>([]);
 
   const { company } = useOutletContext<ContextType>();
   const { toast } = useToast();
@@ -50,12 +55,23 @@ const CreateInstanceModal = () => {
   };
 
   const handleCreate = async () => {
-    if (!name.trim()) return;
+    if (!name.trim() || !token.trim()) {
+      toast({ variant: "destructive", title: "Nome e Token obrigatórios!" });
+      return;
+    }
     setLoading(true);
     try {
-      const res = await evolutionApi.createInstance(name, token || undefined);
-      // Simular createDB localmente (sem Convex)
-      setInstances(prev => [...prev, { _id: Date.now().toString(), name, status: 'qrcode', createdAt: Date.now(), token: token || undefined }]);
+      const res = await evolutionApi.createInstance(name, channel, token, number || undefined);
+      const newInstance: Instance = {
+        _id: Date.now().toString(),
+        name,
+        channel,
+        number: number || undefined,
+        status: 'qrcode',
+        createdAt: Date.now(),
+        token,
+      };
+      setInstances(prev => [...prev, newInstance]);
       if (res.data.data.qrCode) {
         setQrCode(res.data.data.qrCode);
         setCurrentInstance(name);
@@ -64,6 +80,7 @@ const CreateInstanceModal = () => {
       setActiveTab("manage");
       setName("");
       setToken("");
+      setNumber("");
     } catch (error) {
       toast({ variant: "destructive", title: "Erro ao criar instância", description: (error as Error).message });
     } finally {
@@ -72,7 +89,6 @@ const CreateInstanceModal = () => {
   };
 
   const pollAllStatuses = useCallback(async () => {
-    // Simular poll local (sem Convex/updateStatus)
     console.log('Polling statuses...');
   }, []);
 
@@ -83,7 +99,7 @@ const CreateInstanceModal = () => {
 
   const getStatusVariant = (status: string) => {
     if (status === "open") return "default" as const;
-    if (status === "connecting" || status === "qr") return "secondary" as const;
+    if (status === "connecting" || status === "qr" || status === "qrcode") return "secondary" as const;
     return "destructive" as const;
   };
 
@@ -109,12 +125,27 @@ const CreateInstanceModal = () => {
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="ex: minha-instancia" />
             </div>
             <div className="space-y-2">
-              <Label>Token API (opcional)</Label>
-              <Input value={token} onChange={(e) => setToken(e.target.value)} placeholder="Token da Evolution" />
+              <Label>Canal</Label>
+              <Select value={channel} onValueChange={setChannel}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="baileys">Baileys</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <Button onClick={handleCreate} disabled={!name.trim() || loading} className="w-full">
+            <div className="space-y-2">
+              <Label>Token *</Label>
+              <Input value={token} onChange={(e) => setToken(e.target.value)} placeholder="ex: 05BBCIA62B-2E5B-67B8-7355" />
+            </div>
+            <div className="space-y-2">
+              <Label>Número (opcional)</Label>
+              <Input value={number} onChange={(e) => setNumber(e.target.value)} placeholder="ex: 5511999999999" />
+            </div>
+            <Button onClick={handleCreate} disabled={!name.trim() || !token.trim() || loading} className="w-full">
               {loading ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <QrCode className="mr-2 h-4 w-4" />}
-              {loading ? "Criando..." : "Criar Instância"}
+              {loading ? "Criando..." : "Salvar"}
             </Button>
             {qrCode && currentInstance === name && (
               <div className="p-4 bg-muted rounded-lg text-center">
@@ -129,6 +160,8 @@ const CreateInstanceModal = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
+                    <TableHead>Canal</TableHead>
+                    <TableHead>Número</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Criado em</TableHead>
                     <TableHead>Ações</TableHead>
@@ -138,6 +171,8 @@ const CreateInstanceModal = () => {
                   {instances.map((inst) => (
                     <TableRow key={inst._id}>
                       <TableCell>{inst.name}</TableCell>
+                      <TableCell>{inst.channel}</TableCell>
+                      <TableCell>{inst.number || '-'}</TableCell>
                       <TableCell>
                         <Badge variant={getStatusVariant(inst.status)}>{inst.status}</Badge>
                       </TableCell>

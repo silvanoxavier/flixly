@@ -1,0 +1,8 @@
+Prompt 1
+
+Quero criar uma aplicação simples, um CRM onde eu possa acompanhar todos os Leads que eu possuo dentro do meu WhatsApp, por hora vamos nos focar em criar apenas o visual da aplicação.
+
+Pra isso quero criar uma Plataforma simples, quero uma tela de Login, que não possuo opção de cadastro ou tela de boas vindas pois não há necessidade.
+
+Para montar a estética da página de Login se baseie nesse exemplo da Lib do Shadcn: npx shadcn@latest add login-01
+

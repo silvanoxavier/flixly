@@ -46,6 +46,7 @@ export default function MainLayout() {
   const handleNavClick = () => setSidebarExpanded(false);
 
   const sidebarWidth = sidebarExpanded ? 'w-64' : 'w-16';
+  const mainMargin = sidebarExpanded ? 'md:ml-64' : 'md:ml-16';
   const headerPaddingTop = 'pt-16 md:pt-20';
 
   return (
@@ -98,25 +99,25 @@ export default function MainLayout() {
         </div>
       </header>
 
-      {/* Sidebar FIXED OVERLAY md+ (icons sempre, hover expande SOBRE, click colapsa) */}
+      {/* Sidebar md+: BLOCK ocupa espaço narrow icons SEMPRE, hover w-64 */}
       <aside 
-        className={`hidden md:fixed md:left-0 md:top-20 md:h-[calc(100vh-5rem)] md:z-40 ${sidebarWidth} bg-card/95 border-r transition-all duration-500 ease-out shadow-lg overflow-hidden`}
+        className={`hidden md:block ${sidebarWidth} bg-card/95 border-r transition-all duration-500 ease-out shadow-sm h-full ${headerPaddingTop} overflow-hidden z-40`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
         <SidebarNav expanded={sidebarExpanded} onNavClick={handleNavClick} />
       </aside>
 
-      {/* Mobile Sheet (click fecha) */}
+      {/* Mobile: Sheet OVERLAY sobre content */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className={`w-80 p-0 border-r bg-card max-w-xs ${headerPaddingTop} md:hidden`}>
           <SidebarNav expanded={true} onNavClick={() => setMobileOpen(false)} />
         </SheetContent>
       </Sheet>
 
-      {/* Main FULL imóvel p-6 */}
-      <div className={`flex-1 flex flex-col overflow-hidden ${headerPaddingTop}`}>
-        <main className="flex-1 overflow-auto p-6">
+      {/* Main: full após sidebar narrow (ml-16/64 suave, p-6 usa toda tela disponível) */}
+      <div className={`flex-1 flex flex-col overflow-hidden ${headerPaddingTop} ${mainMargin} md:transition-all md:duration-500 md:ease-out min-w-0`}>
+        <main className="flex-1 overflow-auto p-4 md:p-6">
           <Outlet context={{ company: selectedCompany }} />
         </main>
       </div>

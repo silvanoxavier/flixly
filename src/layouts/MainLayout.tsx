@@ -35,18 +35,11 @@ const pageTitles: Record<string, string> = {
 export default function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
-  const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const { setTheme } = useTheme();
   const [selectedCompany, setSelectedCompany] = useState(companies[0]);
   const location = useLocation();
   const currentTitle = pageTitles[location.pathname as keyof typeof pageTitles] || "Flixly";
 
-  const handleMouseEnter = () => setSidebarExpanded(true);
-  const handleMouseLeave = () => setTimeout(() => setSidebarExpanded(false), 300);
-  const handleNavClick = () => setSidebarExpanded(false);
-
-  const sidebarWidth = sidebarExpanded ? 'w-64' : 'w-16';
-  const mainMargin = sidebarExpanded ? 'md:ml-64' : 'md:ml-16';
   const headerPaddingTop = 'pt-16 md:pt-20';
 
   return (
@@ -99,24 +92,20 @@ export default function MainLayout() {
         </div>
       </header>
 
-      {/* Sidebar md+: BLOCK ocupa espaço narrow icons SEMPRE, hover w-64 */}
-      <aside 
-        className={`hidden md:block ${sidebarWidth} bg-card/95 border-r transition-all duration-500 ease-out shadow-sm h-full ${headerPaddingTop} overflow-hidden z-40`}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        <SidebarNav expanded={sidebarExpanded} onNavClick={handleNavClick} />
+      {/* Sidebar narrow SEMPRE md+ (w-16 ocupa esquerdo, Tooltip hover labels) */}
+      <aside className="hidden md:block w-16 bg-card/95 border-r shadow-sm h-full md:h-[calc(100vh-5rem)] md:pt-20 overflow-hidden z-40">
+        <SidebarNav expanded={false} />
       </aside>
 
-      {/* Mobile: Sheet OVERLAY sobre content */}
+      {/* Mobile Sheet full labels */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className={`w-80 p-0 border-r bg-card max-w-xs ${headerPaddingTop} md:hidden`}>
-          <SidebarNav expanded={true} onNavClick={() => setMobileOpen(false)} />
+          <SidebarNav expanded={true} />
         </SheetContent>
       </Sheet>
 
-      {/* Main: full após sidebar narrow (ml-16/64 suave, p-6 usa toda tela disponível) */}
-      <div className={`flex-1 flex flex-col overflow-hidden ${headerPaddingTop} ${mainMargin} md:transition-all md:duration-500 md:ease-out min-w-0`}>
+      {/* Main SEMPRE full após w-16 (ml-16 fixo, p-6, NUNCA muda) */}
+      <div className="flex-1 flex flex-col overflow-hidden md:ml-16 ${headerPaddingTop} min-w-0">
         <main className="flex-1 overflow-auto p-4 md:p-6">
           <Outlet context={{ company: selectedCompany }} />
         </main>

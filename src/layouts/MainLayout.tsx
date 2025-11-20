@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Menu, Search, Sun, Moon, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -33,12 +33,10 @@ export default function MainLayout() {
   const location = useLocation();
   const currentTitle = pageTitles[location.pathname as keyof typeof pageTitles] || "Flixly";
 
-  const HEADER_HEIGHT = "16"; // h-16 md:h-20
-
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       {/* Header FIXED full width top-0 */}
-      <header className={`fixed top-0 left-0 right-0 h-${HEADER_HEIGHT} md:h-20 border-b bg-card/80 backdrop-blur-sm z-50 flex items-center px-4 md:px-6`}>
+      <header className="fixed top-0 left-0 right-0 h-16 md:h-20 border-b bg-card/80 backdrop-blur-sm z-50 flex items-center px-4 md:px-6">
         {/* Left: Logo Flixly + Title (hidden mobile) + Hamburger */}
         <div className="flex items-center space-x-3 min-w-0 flex-1 max-w-md">
           {/* Logo Flixly */}
@@ -52,12 +50,15 @@ export default function MainLayout() {
           </div>
           {/* Title */}
           <h2 className="text-lg font-semibold text-foreground truncate hidden md:block ml-2">{currentTitle}</h2>
-          {/* Hamburger (sempre visível) */}
-          <SheetTrigger asChild className="ml-auto md:ml-4">
-            <Button variant="ghost" size="icon">
-              <Menu className="h-6 w-6" />
-            </Button>
-          </SheetTrigger>
+          {/* Hamburger Button direto (sem SheetTrigger) */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setMobileOpen(true)}
+            className="ml-auto md:ml-4"
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
         </div>
 
         {/* Center: Search full flex-1 */}
@@ -100,15 +101,15 @@ export default function MainLayout() {
         </div>
       </header>
 
-      {/* Sidebar Overlay (conteúdo começa ABAIXO header) */}
+      {/* Sidebar Overlay CONTROLLED (sem Trigger, só open/onOpenChange) */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className={`w-80 p-0 border-r bg-card max-w-xs pt-${HEADER_HEIGHT} md:pt-20`}>
+        <SheetContent side="left" className="w-80 p-0 border-r bg-card max-w-xs pt-16 md:pt-20">
           <SidebarNav />
         </SheetContent>
       </Sheet>
 
       {/* Main content (começa ABAIXO header) */}
-      <div className={`flex-1 flex flex-col overflow-hidden pt-${HEADER_HEIGHT} md:pt-20 ml-0`}>
+      <div className="flex-1 flex flex-col overflow-hidden pt-16 md:pt-20 ml-0">
         <main className="flex-1 overflow-auto p-0 md:p-6">
           <Outlet context={{ company: selectedCompany }} />
         </main>

@@ -1,9 +1,8 @@
 "use client";
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from 'next-themes';
 import MainLayout from './layouts/MainLayout';
-import Index from './pages/Index';
 import Dashboard from './pages/Dashboard';
 import Channels from './pages/Channels';
 import Customers from './pages/Customers';
@@ -22,7 +21,7 @@ function App() {
       <Router>
         <Routes>
           <Route element={<MainLayout />}>
-            <Route index element={<Index />} />
+            <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/channels" element={<Channels />} />
             <Route path="/customers" element={<Customers />} />

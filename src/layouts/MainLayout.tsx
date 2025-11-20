@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Sun, Moon, Monitor } from "lucide-react";
@@ -15,10 +15,22 @@ const companies = [
   { id: "2", name: "Empresa B", instance: "inst2" },
 ];
 
+const pageTitles: Record<string, string> = {
+  "/": "Dashboard",
+  "/dashboard": "Dashboard",
+  "/channels": "Canais",
+  "/customers": "Clientes",
+  "/messages": "Mensagens",
+  "/reports": "Relatórios",
+  "/settings": "Configurações",
+};
+
 export default function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { setTheme } = useTheme();
   const [selectedCompany, setSelectedCompany] = useState(companies[0]);
+  const location = useLocation();
+  const currentTitle = pageTitles[location.pathname as keyof typeof pageTitles] || "Dashboard";
 
   return (
     <div className="flex h-screen bg-background">
@@ -45,10 +57,10 @@ export default function MainLayout() {
         {/* Header */}
         <header className="border-b bg-card p-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" className="md:hidden">
+            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(true)}>
               <Menu className="h-5 w-5" />
             </Button>
-            <h2 className="text-xl font-semibold text-foreground">Dashboard</h2>
+            <h2 className="text-xl font-semibold text-foreground">{currentTitle}</h2>
           </div>
           <div className="flex items-center space-x-2">
             <Select value={selectedCompany.id} onValueChange={(id) => setSelectedCompany(companies.find(c => c.id === id)!)}>
@@ -60,10 +72,10 @@ export default function MainLayout() {
               </SelectContent>
             </Select>
             
-            {/* Theme Switcher Botão Verde WhatsApp */}
+            {/* Theme Switcher */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="default" size="icon" className="bg-primary hover:bg-primary/90">
+                <Button variant="default" size="icon">
                   <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                   <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
                   <span className="sr-only">Toggle theme</span>

@@ -34,9 +34,8 @@ export default function MainLayout() {
   const location = useLocation();
   const currentTitle = pageTitles[location.pathname as keyof typeof pageTitles] || "Flixly";
 
-  // Delay mouseleave UX
   const handleMouseEnter = () => setSidebarExpanded(true);
-  const handleMouseLeave = () => setTimeout(() => setSidebarExpanded(false), 200);
+  const handleMouseLeave = () => setTimeout(() => setSidebarExpanded(false), 300);
 
   const sidebarWidth = sidebarExpanded ? 'w-64' : 'w-16';
   const mainMargin = sidebarExpanded ? 'md:ml-64' : 'md:ml-16';
@@ -44,16 +43,10 @@ export default function MainLayout() {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      {/* Header FIXED full width */}
+      {/* Header */}
       <header className="fixed top-0 left-0 right-0 h-16 md:h-20 border-b bg-card/90 backdrop-blur-sm z-50 flex items-center px-4 md:px-6">
-        {/* Left: Hamburger MOBILE ONLY + Logo + Title */}
         <div className="flex items-center space-x-3 min-w-0 flex-1 max-w-md">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => setMobileOpen(true)}
-            className="md:hidden"
-          >
+          <Button variant="ghost" size="icon" onClick={() => setMobileOpen(true)} className="md:hidden">
             <Menu className="h-6 w-6" />
           </Button>
           <div className="flex items-center space-x-2">
@@ -66,21 +59,12 @@ export default function MainLayout() {
           </div>
           <h2 className="text-lg font-semibold text-foreground truncate hidden md:block ml-2">{currentTitle}</h2>
         </div>
-
-        {/* Center: Search */}
         <div className="flex-1 max-w-2xl mx-4 hidden md:flex">
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Pesquisar mensagens, clientes..."
-              className="pl-10 w-full h-12 rounded-full"
-              value={globalSearch}
-              onChange={(e) => setGlobalSearch(e.target.value)}
-            />
+            <Input placeholder="Pesquisar mensagens, clientes..." className="pl-10 w-full h-12 rounded-full" value={globalSearch} onChange={(e) => setGlobalSearch(e.target.value)} />
           </div>
         </div>
-
-        {/* Right: Company + Theme */}
         <div className="flex items-center space-x-2 min-w-0 flex-1 max-w-md justify-end">
           <Select value={selectedCompany.id} onValueChange={(id) => setSelectedCompany(companies.find(c => c.id === id)!)}>
             <SelectTrigger className="w-44 md:w-48 h-12">
@@ -107,12 +91,8 @@ export default function MainLayout() {
         </div>
       </header>
 
-      {/* Sidebar BLOCK ocupa espaço md+ (narrow icons, hover full) */}
-      <aside 
-        className={`hidden md:block ${sidebarWidth} bg-card/95 border-r transition-all duration-300 ease-out shadow-sm h-full ${headerPaddingTop} overflow-hidden z-40`}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
+      {/* Sidebar */}
+      <aside className={`hidden md:block ${sidebarWidth} bg-card/95 border-r transition-all duration-500 ease-out shadow-sm h-full ${headerPaddingTop} overflow-hidden z-40`} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
         <SidebarNav expanded={sidebarExpanded} />
       </aside>
 
@@ -123,9 +103,9 @@ export default function MainLayout() {
         </SheetContent>
       </Sheet>
 
-      {/* Main content empurrado pela sidebar */}
-      <div className={`flex-1 flex flex-col overflow-hidden ${headerPaddingTop} ${mainMargin} md:transition-all md:duration-300 md:ease-out`}>
-        <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+      {/* Main: pl-1 md+ (gap zero), transição suave */}
+      <div className={`flex-1 flex flex-col overflow-hidden ${headerPaddingTop} ${mainMargin} md:transition-all md:duration-500 md:ease-out min-w-0`}>
+        <main className="flex-1 overflow-auto p-4 md:pl-1 md:pr-6 md:py-6 lg:p-8 lg:pl-6">
           <Outlet context={{ company: selectedCompany }} />
         </main>
       </div>

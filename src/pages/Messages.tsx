@@ -15,16 +15,15 @@ export default function Messages() {
 
   return (
     <div className="flex h-full md:flex-row flex-col">
-      {/* AMARELO: Lista Conversas */}
-      <div className="w-full md:w-80 lg:w-96 border-r bg-card flex-shrink-0 flex flex-col">
+      {/* Chat List responsiva */}
+      <div className="w-full md:w-72 lg:w-80 xl:w-96 border-r bg-card flex-shrink-0 flex flex-col">
         <ChatList onSelectChat={setSelectedChat} />
       </div>
 
-      {/* AZUL: Conversa Selecionada */}
+      {/* Chat Window */}
       <div className="flex-1 flex flex-col min-h-0">
         {selectedChat ? (
           <>
-            {/* Header Chat */}
             <div className="border-b bg-card/80 backdrop-blur p-4 flex items-center justify-between sticky top-0 z-10">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">

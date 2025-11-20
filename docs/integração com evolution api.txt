@@ -1,0 +1,155 @@
+# Integração com Evolution API
+
+Este documento descreve como integrar o sistema com a Evolution API para envio de mensagens WhatsApp.
+
+## Formato da API Evolution
+
+A Evolution API utiliza requisições HTTP para enviar mensagens e obter informações sobre as instâncias. As requisições são feitas para um endpoint base, seguido por um endpoint específico para cada ação.
+
+### Endpoint Base
+
+O endpoint base da Evolution API é configurado através da variável de ambiente `EVOLUTION_API_URL`. Certifique-se de que essa variável esteja corretamente configurada.
+
+Exemplo: `https://api.evolution-api.com`
+
+### Autenticação
+
+A autenticação é feita através de um cabeçalho `apikey` em todas as requisições. A chave da API é configurada através da variável de ambiente `EVOLUTION_API_KEY`.
+
+Exemplo:
+
+```
+headers: {
+  'Content-Type': 'application/json',
+  'apikey': 'SUA_CHAVE_API',
+}
+```
+
+### Envio de Mensagem de Texto
+
+Para enviar uma mensagem de texto, utilize o seguinte endpoint:
+
+`POST /message/sendText/{instanceName}`
+
+*   `instanceName`: Nome da instância WhatsApp configurada na Evolution API.
+
+Corpo da requisição (JSON):
+
+```json
+{
+  "number": "5511999999999",
+  "text": "Olá, mundo!"
+}
+```
+
+### Envio de Mensagem com Mídia
+
+Para enviar uma mensagem com mídia (imagem ou vídeo), utilize o seguinte endpoint:
+
+`POST /message/sendMedia/{instanceName}`
+
+*   `instanceName`: Nome da instância WhatsApp configurada na Evolution API.
+
+Corpo da requisição (JSON):
+
+```json
+{
+  "number": "5511999999999",
+  "mediatype": "image",
+  "media": "URL_DA_IMAGEM",
+  "caption": "Legenda da imagem"
+}
+```
+
+### Obtenção do Status da Conexão
+
+Para obter o status da conexão de uma instância, utilize o seguinte endpoint:
+
+`GET /instance/connectionState/{instanceName}`
+
+*   `instanceName`: Nome da instância WhatsApp configurada na Evolution API.
+
+A resposta da API será um JSON com o status da conexão:
+
+```json
+{
+  "status": "CONNECTED"
+}
+```
+
+Os possíveis valores para o status são:
+
+*   `CONNECTED`: Instância conectada e pronta para enviar mensagens.
+*   `DISCONNECTED`: Instância desconectada.
+*   `CONNECTING`: Instância em processo de conexão.
+*   `QRCODE`: Instância aguardando leitura do QR Code.
+
+### Geração do QR Code
+
+Para gerar o QR Code para autenticação da instância, utilize o seguinte endpoint:
+
+`GET /instance/qrCode/{instanceName}`
+
+*   `instanceName`: Nome da instância WhatsApp configurada na Evolution API.
+
+A resposta da API será um JSON com o QR Code em formato Base64:
+
+```json
+{
+  "qrCode": "data:image/png;base64,..."
+}
+```
+
+## Implementação no Código
+
+Para facilitar a integração, foram criadas funções no arquivo `src/services/evolutionApi.ts` que encapsulam as chamadas para a Evolution API.
+
+Exemplo de como enviar uma mensagem de texto:
+
+```typescript
+import { connectInstance } from "@/services/evolutionApi";
+
+async function connect(instanceName: string) {
+  try {
+    await connectInstance(instanceName);
+    console.log("Instância conectada com sucesso!");
+  } catch (error: any) {
+    console.error("Erro ao conectar instância:", error);
+  }
+}
+```
+
+## Variáveis de Ambiente
+
+As seguintes variáveis de ambiente são necessárias para a integração com a Evolution API:
+
+*   `EVOLUTION_API_URL`: URL base da Evolution API.
+*   `EVOLUTION_API_KEY`: Chave de API para autenticação na Evolution API.
+
+Certifique-se de configurar essas variáveis corretamente no seu ambiente.
+
+## Tratamento de Erros
+
+É importante tratar os erros que podem ocorrer durante a comunicação com a Evolution API. Verifique o código de status da resposta e o corpo da resposta para obter informações detalhadas sobre o erro.
+
+```typescript
+try {
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Erro na API: ${response.status} - ${errorText}`);
+  }
+  const data = await response.json();
+  return data;
+} catch (error: any) {
+  console.error("Erro ao comunicar com a API:", error);
+  throw error;
+}
+```
+
+## Observações
+
+*   Certifique-se de que a Evolution API esteja corretamente configurada e em execução.
+*   Verifique as permissões de acesso à API e se as variáveis de ambiente estão corretamente configuradas.
+*   Implemente um sistema de logs para monitorar as chamadas à API e identificar possíveis erros.
+```

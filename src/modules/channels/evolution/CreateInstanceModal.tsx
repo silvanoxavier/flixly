@@ -24,9 +24,11 @@ interface Instance {
   channel: string;
   status: string;
   number?: string;
-  createdAt: number;
   token?: string;
+  createdAt: number;
 }
+
+const STORAGE_KEY = "flixly_instances";
 
 const CreateInstanceModal = () => {
   const [open, setOpen] = useState(false);
@@ -43,16 +45,48 @@ const CreateInstanceModal = () => {
   const { company } = useOutletContext<ContextType>();
   const { toast } = useToast();
 
+  // Persistência localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      setInstances(JSON.parse(saved));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(instances));
+  }, [instances]);
+
+  const loadInstances = useCallback(async () => {
+    try {
+      const res = await evolutionApi.listInstances();
+      console.log("Instâncias reais:", res.data.data.instances);
+      // Merge com local (futuro: sync com Prisma)
+    } catch (error) {
+      console.log("API indisponível, usando localStorage");
+    }
+  }, []);
+
   const fetchQR = async (instanceName: string) => {
     try {
       const res = await evolutionApi.getQRCode(instanceName);
-      setQrCode(res.data.data.qrCode);
+      setQrCode(res.data.data.qrCode || "");
       setCurrentInstance(instanceName);
-      toast({ title: "QR Code gerado!" });
-    } catch (error) {
-      toast({ variant: "destructive", title: "Erro ao gerar QR", description: (error as Error).message });
+      toast({ title: "QR Code atualizado!" });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Erro QR", description: error.response?.data || error.message });
     }
   };
+
+  const pollStatus = useCallback(async (instanceName: string) => {
+    try {
+      const res = await evolutionApi.getConnectionState(instanceName);
+      const status = res.data.data.status;
+      setInstances(prev => prev.map(inst => 
+        inst.name === instanceName ? { ...inst, status } : inst
+      ));
+    } catch {}
+  }, []);
 
   const handleCreate = async () => {
     if (!name.trim() || !token.trim()) {
@@ -67,40 +101,36 @@ const CreateInstanceModal = () => {
         name,
         channel,
         number: number || undefined,
-        status: 'qrcode',
+        status: res.data.data.qrCode ? 'qrcode' : 'open',
         createdAt: Date.now(),
         token,
       };
       setInstances(prev => [...prev, newInstance]);
+      loadInstances();
       if (res.data.data.qrCode) {
         setQrCode(res.data.data.qrCode);
         setCurrentInstance(name);
       }
-      toast({ title: "Instância criada com sucesso!" });
+      toast({ title: "Instância criada na Evolution!" });
       setActiveTab("manage");
-      setName("");
-      setToken("");
-      setNumber("");
-    } catch (error) {
-      toast({ variant: "destructive", title: "Erro ao criar instância", description: (error as Error).message });
+      setName(""); setToken(""); setNumber("");
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Erro ao criar", description: error.response?.data?.message || error.message });
     } finally {
       setLoading(false);
     }
   };
 
-  const pollAllStatuses = useCallback(async () => {
-    console.log('Polling statuses...');
-  }, []);
-
   useEffect(() => {
-    const interval = setInterval(pollAllStatuses, 10000);
+    if (open) loadInstances();
+    const interval = setInterval(() => instances.forEach(inst => pollStatus(inst.name)), 10000);
     return () => clearInterval(interval);
-  }, [pollAllStatuses]);
+  }, [open, loadInstances, pollStatus, instances]);
 
   const getStatusVariant = (status: string) => {
-    if (status === "open") return "default" as const;
-    if (status === "connecting" || status === "qr" || status === "qrcode") return "secondary" as const;
-    return "destructive" as const;
+    if (status === "open" || status === "connected") return "default";
+    if (status === "connecting" || status === "qrcode") return "secondary";
+    return "destructive";
   };
 
   return (
@@ -114,22 +144,20 @@ const CreateInstanceModal = () => {
         <DialogHeader>
           <DialogTitle>Instâncias Evolution - {company.name}</DialogTitle>
         </DialogHeader>
-        <Tabs value={activeTab} onValueChange={setActiveTab as any} className="flex-1 flex flex-col overflow-hidden">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col overflow-hidden">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="create">Criar</TabsTrigger>
-            <TabsTrigger value="manage">Gerenciar ({instances.length}/5)</TabsTrigger>
+            <TabsTrigger value="manage">Gerenciar ({instances.length})</TabsTrigger>
           </TabsList>
-          <TabsContent value="create" className="flex-1 flex flex-col mt-4 space-y-4 overflow-hidden">
+          <TabsContent value="create" className="flex-1 flex flex-col mt-4 space-y-4 overflow-hidden p-1">
             <div className="space-y-2">
-              <Label>Nome da Instância *</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="ex: minha-instancia" />
+              <Label>Nome *</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="minha-instancia-1" />
             </div>
             <div className="space-y-2">
               <Label>Canal</Label>
               <Select value={channel} onValueChange={setChannel}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="baileys">Baileys</SelectItem>
                 </SelectContent>
@@ -137,24 +165,18 @@ const CreateInstanceModal = () => {
             </div>
             <div className="space-y-2">
               <Label>Token *</Label>
-              <Input value={token} onChange={(e) => setToken(e.target.value)} placeholder="ex: 05BBCIA62B-2E5B-67B8-7355" />
+              <Input value={token} onChange={(e) => setToken(e.target.value)} placeholder="05BBCIA62B-2E5B..." type="password" />
             </div>
             <div className="space-y-2">
               <Label>Número (opcional)</Label>
-              <Input value={number} onChange={(e) => setNumber(e.target.value)} placeholder="ex: 5511999999999" />
+              <Input value={number} onChange={(e) => setNumber(e.target.value)} placeholder="5511999999999" />
             </div>
             <Button onClick={handleCreate} disabled={!name.trim() || !token.trim() || loading} className="w-full">
               {loading ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <QrCode className="mr-2 h-4 w-4" />}
-              {loading ? "Criando..." : "Salvar"}
+              {loading ? "Criando..." : "Criar Instância"}
             </Button>
-            {qrCode && currentInstance === name && (
-              <div className="p-4 bg-muted rounded-lg text-center">
-                <p className="mb-2">QR Code para {name}:</p>
-                <img src={`data:image/png;base64,${qrCode}`} alt="QR Code" className="mx-auto max-w-sm rounded shadow" />
-              </div>
-            )}
           </TabsContent>
-          <TabsContent value="manage" className="flex-1 flex flex-col mt-4 space-y-4 overflow-hidden">
+          <TabsContent value="manage" className="flex-1 flex flex-col mt-4 space-y-4 overflow-hidden p-1">
             <div className="flex-1 overflow-auto">
               <Table>
                 <TableHeader>
@@ -163,7 +185,7 @@ const CreateInstanceModal = () => {
                     <TableHead>Canal</TableHead>
                     <TableHead>Número</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Criado em</TableHead>
+                    <TableHead>Criado</TableHead>
                     <TableHead>Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -173,12 +195,10 @@ const CreateInstanceModal = () => {
                       <TableCell>{inst.name}</TableCell>
                       <TableCell>{inst.channel}</TableCell>
                       <TableCell>{inst.number || '-'}</TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusVariant(inst.status)}>{inst.status}</Badge>
-                      </TableCell>
+                      <TableCell><Badge variant={getStatusVariant(inst.status) as any}>{inst.status}</Badge></TableCell>
                       <TableCell>{new Date(inst.createdAt).toLocaleDateString("pt-BR")}</TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm" onClick={() => fetchQR(inst.name)}>
+                        <Button variant="outline" size="sm" onClick={() => fetchQR(inst.name)} className="mr-1">
                           <QrCode className="h-4 w-4" />
                         </Button>
                       </TableCell>
@@ -187,10 +207,11 @@ const CreateInstanceModal = () => {
                 </TableBody>
               </Table>
             </div>
-            {qrCode && currentInstance && (
+            {qrCode && (
               <div className="p-4 bg-muted rounded-lg text-center">
-                <p className="mb-2">QR Code para {currentInstance}:</p>
-                <img src={`data:image/png;base64,${qrCode}`} alt="QR Code" className="mx-auto max-w-sm rounded shadow" />
+                <p className="mb-2 font-medium">QR Code: {currentInstance}</p>
+                <img src={`data:image/png;base64,${qrCode}`} alt="QR" className="mx-auto max-w-xs rounded shadow-lg" />
+                <p className="mt-2 text-sm text-muted-foreground">Escaneie com WhatsApp</p>
               </div>
             )}
           </TabsContent>

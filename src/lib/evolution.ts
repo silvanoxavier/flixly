@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 
 interface EvolutionResponse<T = any> {
-  status: string;
+  status: boolean;
   data: T;
 }
 
@@ -18,31 +18,40 @@ const api = axios.create({
 
 export const evolutionApi = {
   createInstance: async (
-    name: string,
+    instanceName: string,
     channel: string = "baileys",
-    token: string,
+    token?: string,
     number?: string
   ): Promise<AxiosResponse<EvolutionResponse<{ qrCode?: string }>>> =>
-    api.post("/instance/create", { name, channel, token, number, qrcode: true }),
+    api.post("/manager/createInstance", { 
+      instanceName, 
+      channel, 
+      token, 
+      number, 
+      qrcode: true 
+    }),
+
+  listInstances: async (): Promise<AxiosResponse<EvolutionResponse<{ instances: any[] }>>> =>
+    api.get("/manager/getInstances"),
+
+  getInstance: async (instanceName: string): Promise<AxiosResponse<EvolutionResponse>> =>
+    api.get(`/manager/getInstance/${instanceName}`),
+
+  getQRCode: async (instanceName: string): Promise<AxiosResponse<EvolutionResponse<{ qrCode: string }>>> =>
+    api.get(`/instance/fetchQR/${instanceName}`),
+
+  getConnectionState: async (instanceName: string): Promise<AxiosResponse<EvolutionResponse<{ status: string }>>> =>
+    api.get(`/instance/fetchStatus/${instanceName}`),
 
   sendText: async (instanceName: string, number: string, text: string): Promise<AxiosResponse<EvolutionResponse>> =>
-    api.post(`/message/sendText/${instanceName}`, { number, text }),
+    api.post(`/message/sendText/${instanceName}/${number}`, { text }),
 
   sendMedia: async (
     instanceName: string,
     number: string,
-    mediatype: "image" | "video",
+    mediatype: "image" | "audio" | "video" | "document" | "sticker",
     media: string,
     caption?: string
   ): Promise<AxiosResponse<EvolutionResponse>> =>
-    api.post(`/message/sendMedia/${instanceName}`, { number, mediatype, media, caption }),
-
-  getConnectionState: async (instanceName: string): Promise<AxiosResponse<EvolutionResponse<{ status: string }>>> =>
-    api.get(`/instance/connectionState/${instanceName}`),
-
-  getQRCode: async (instanceName: string): Promise<AxiosResponse<EvolutionResponse<{ qrCode: string }>>> =>
-    api.get(`/instance/qrCode/${instanceName}`),
-
-  listInstances: async (): Promise<AxiosResponse<EvolutionResponse<string[]>>> =>
-    api.get("/instance/listInstances"),
+    api.post(`/message/sendMedia/${instanceName}/${number}`, { mediatype, media, caption }),
 };

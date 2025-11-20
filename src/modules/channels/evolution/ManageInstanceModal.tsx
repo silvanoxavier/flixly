@@ -10,11 +10,11 @@ import { evolutionApi } from "~/lib/evolution";
 const ManageInstanceModal = () => {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<"connected" | string>("connected");
-  const [qr, setQr] = useState("");
+  const [qr] = useState("");
 
   const fetchStatus = async () => {
     try {
-      const res = await evolutionApi.getStatus("inst1");
+      const res = await evolutionApi.getConnectionState("inst1");
       setStatus(res.data.status || "connected");
     } catch {}
   };

@@ -8,7 +8,6 @@ import { Menu, Sun, Moon, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
 import SidebarNav from "~/components/SidebarNav";
 
 const companies = [
@@ -18,7 +17,7 @@ const companies = [
 
 export default function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
   const [selectedCompany, setSelectedCompany] = useState(companies[0]);
 
   return (

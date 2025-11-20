@@ -25,25 +25,25 @@ interface SidebarNavProps {
 
 export default function SidebarNav({ expanded }: SidebarNavProps) {
   return (
-    <nav className="flex flex-col h-full p-2 md:p-4 space-y-2 pt-2">
+    <nav className="flex flex-col h-full p-4 space-y-2">
       {navItems.map((item) => (
         <NavLink
           key={item.href}
           to={item.href}
           className={({ isActive }) =>
-            `group flex items-center p-3 rounded-lg transition-all duration-200 overflow-hidden ${
+            `group flex items-center rounded-xl transition-all duration-200 overflow-hidden h-12 ${
               isActive
-                ? "bg-primary text-primary-foreground shadow-md"
-                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-            } ${expanded ? 'space-x-3 pl-3' : 'justify-center pl-2'}`
+                ? "bg-primary/90 text-primary-foreground shadow-lg border border-primary/50"
+                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground hover:shadow-md"
+            } ${expanded ? 'pl-4 space-x-3 justify-start' : 'justify-center px-3' }`
           }
         >
-          <item.icon className={`h-5 w-5 flex-shrink-0 transition-transform ${expanded ? 'group-hover:scale-110' : ''}`} />
+          <item.icon className={`h-6 w-6 flex-shrink-0 transition-transform duration-200 ${expanded ? 'scale-110' : 'group-hover:scale-110'}`} />
           <span 
-            className={`font-medium whitespace-nowrap transition-all duration-300 ${
+            className={`font-medium whitespace-nowrap transition-all duration-300 origin-left ${
               expanded 
-                ? 'opacity-100 translate-x-0 ml-3' 
-                : 'opacity-0 scale-75 -translate-x-4 w-0 ml-0'
+                ? 'opacity-100 scale-100 translate-x-0 w-auto ml-3' 
+                : 'opacity-0 scale-75 -translate-x-2 w-0 ml-0 invisible'
             }`}
           >
             {item.label}

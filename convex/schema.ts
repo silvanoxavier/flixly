@@ -1,16 +1,14 @@
-import { defineSchema } from "convex/server";
-import { usersSchema } from "./schemas/users";
-import { companiesSchema } from "./schemas/companies";
-import { departmentsSchema } from "./schemas/departments";
-import { customersSchema } from "./schemas/customers";
-import { chatsSchema } from "./schemas/chats";
-import { messagesSchema } from "./schemas/messages";
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
 
 export default defineSchema({
-  users: usersSchema,
-  companies: companiesSchema,
-  departments: departmentsSchema,
-  customers: customersSchema,
-  chats: chatsSchema,
-  messages: messagesSchema,
+  instances: defineTable({
+    companyId: v.string(),
+    name: v.string(),
+    status: v.string(),
+    token: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_company", ["companyId"])
+    .index("by_company_name", ["companyId", "name"]),
 });

@@ -4,10 +4,9 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Sun, Moon } from "lucide-react";
+import { Menu, Sun, Moon, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 import SidebarNav from "~/components/SidebarNav";
 
 const companies = [
@@ -19,6 +18,22 @@ export default function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const [selectedCompany, setSelectedCompany] = useState(companies[0]);
+
+  const toggleTheme = () => {
+    if (theme === "light") {
+      setTheme("dark");
+    } else if (theme === "dark") {
+      setTheme("system");
+    } else {
+      setTheme("light");
+    }
+  };
+
+  const getThemeIcon = () => {
+    if (theme === "light") return <Moon className="h-5 w-5" />;
+    if (theme === "dark") return <Monitor className="h-5 w-5" />;
+    return <Sun className="h-5 w-5" />;
+  };
 
   return (
     <div className="flex h-screen bg-background">
@@ -59,8 +74,8 @@ export default function MainLayout() {
                 {companies.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            <Button variant="ghost" size="icon" onClick={toggleTheme}>
+              {getThemeIcon()}
             </Button>
           </div>
         </header>

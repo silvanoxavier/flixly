@@ -2,19 +2,33 @@
 
 import { NavLink } from "react-router-dom";
 import { 
+  Home,
   LayoutDashboard, 
+  Building2,
   Users, 
-  MessageCircle, 
   Smartphone, 
+  MessagesSquare,
+  MessageCircle,
+  Package,
+  Columns3,
+  BarChart3,
+  Zap,
   FileBarChart, 
   Settings 
 } from "lucide-react";
 
 const navItems = [
+  { href: "/", label: "Início", icon: Home },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/companies", label: "Empresas", icon: Building2 },
   { href: "/channels", label: "Canais", icon: Smartphone },
   { href: "/customers", label: "Clientes", icon: Users },
+  { href: "/chat", label: "Chat", icon: MessagesSquare },
   { href: "/messages", label: "Mensagens", icon: MessageCircle },
+  { href: "/catalog", label: "Catálogo", icon: Package },
+  { href: "/kanban", label: "Kanban", icon: Columns3 },
+  { href: "/analytics", label: "Análises", icon: BarChart3 },
+  { href: "/automations", label: "Automações", icon: Zap },
   { href: "/reports", label: "Relatórios", icon: FileBarChart },
   { href: "/settings", label: "Configurações", icon: Settings },
 ];

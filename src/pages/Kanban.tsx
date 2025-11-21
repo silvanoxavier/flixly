@@ -179,9 +179,9 @@ export default function Kanban() {
         </Dialog>
       </div>
 
-      {/* Scrollbar HORIZONTAL PROMINENTE: h-3.5 thick pb-12 espaço dedicado */}
+      {/* Container cols: overflow-x-auto overflow-y-HIDDEN (sem double vertical) */}
       <div 
-        className="flex gap-4 overflow-x-auto pb-12 snap-x snap-mandatory scrollbar scrollbar-thumb-muted-foreground/80 scrollbar-track-transparent/50 [&::-webkit-scrollbar]:h-3.5 [&::-webkit-scrollbar-thumb]:rounded-full scroll-smooth h-full"
+        className="flex gap-4 overflow-x-auto overflow-y-hidden pb-12 snap-x snap-mandatory scrollbar scrollbar-thumb-muted-foreground/80 scrollbar-track-transparent/50 [&::-webkit-scrollbar]:h-3.5 [&::-webkit-scrollbar-thumb]:rounded-full scroll-smooth h-full"
         style={{ 
           scrollbarWidth: 'thin', 
           scrollbarColor: 'rgb(148 163 184 / 0.8) transparent' 
@@ -202,7 +202,7 @@ export default function Kanban() {
                 {key.replace(/^\w/, (c) => c.toUpperCase())}
               </h3>
               
-              <div className="flex-1 space-y-3 overflow-y-auto pb-4">
+              <div className="flex-1 space-y-3 overflow-y-auto pb-4 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent/20 [&::-webkit-scrollbar]:w-2">
                 {column.items.map((item) => (
                   <Card
                     key={item.id}

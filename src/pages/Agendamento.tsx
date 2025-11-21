@@ -11,10 +11,25 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Plus, Calendar as CalendarIcon } from 'lucide-react';
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Importa o objeto de locale diretamente, se disponível
-// Se o erro persistir, pode ser necessário instalar @fullcalendar/core/locales-all
-// ou verificar a configuração do Vite para alias de módulos.
 import * as allLocales from '@fullcalendar/core/locales-all';
 
 // --- Mock Data ---
@@ -25,28 +40,33 @@ interface Resource {
 }
 
 const resources: Resource[] = [
-  { id: 'r1', title: 'Vendedor A', color: '#3b82f6' }, // blue
-  { id: 'r2', title: 'Vendedor B', color: '#10b981' }, // green
-  { id: 'r3', title: 'Suporte', color: '#f59e0b' }, // amber
+  { id: 'r1', title: 'Vendedor A', color: '#3b82f6' },
+  { id: 'r2', title: 'Vendedor B', color: '#10b981' },
+  { id: 'r3', title: 'Suporte', color: '#f59e0b' },
 ];
 
 const initialEvents = [
-  { id: '1', title: 'Reunião Cliente X', start: '2024-10-20T10:00:00', end: '2024-10-20T12:00:00', resourceId: 'r1', color: resources[0].color },
-  { id: '2', title: 'Follow-up Y', start: '2024-10-21T14:00:00', end: '2024-10-21T15:30:00', resourceId: 'r2', color: resources[1].color },
-  { id: '3', title: 'Treinamento Interno', start: '2024-10-22T09:00:00', end: '2024-10-22T11:00:00', resourceId: 'r3', color: resources[2].color },
-  { id: '4', title: 'Demo Produto', start: '2024-10-23T16:00:00', end: '2024-10-23T17:00:00', resourceId: 'r1', color: resources[0].color },
+  { id: '1', title: 'Reunião Cliente X', start: '2024-10-20T10:00:00', end: '2024-10-20T12:00:00', resourceId: 'r1', backgroundColor: resources[0].color },
+  { id: '2', title: 'Follow-up Y', start: '2024-10-21T14:00:00', end: '2024-10-21T15:30:00', resourceId: 'r2', backgroundColor: resources[1].color },
+  { id: '3', title: 'Treinamento Interno', start: '2024-10-22T09:00:00', end: '2024-10-22T11:00:00', resourceId: 'r3', backgroundColor: resources[2].color },
+  { id: '4', title: 'Demo Produto', start: '2024-10-23T16:00:00', end: '2024-10-23T17:00:00', resourceId: 'r1', backgroundColor: resources[0].color },
 ];
 
 // --- Componente Principal ---
 export default function Agendamento() {
   const [events, setEvents] = useState(initialEvents);
   const [activeResources, setActiveResources] = useState<string[]>(resources.map(r => r.id));
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    start: '',
+    end: '',
+    resourceId: resources[0].id,
+  });
 
   // Encontra o locale pt-br no objeto de todos os locales
-  // allLocales pode exportar um objeto com uma propriedade 'default' que contém os locales
-  const ptBrLocale = (allLocales as any).default.find((locale: { code: string; }) => locale.code === 'pt-br');
+  const ptBrLocale = (allLocales as any).default?.find((locale: { code: string; }) => locale.code === 'pt-br') || 'pt';
 
-  // Adiciona um console.log para verificar se o locale foi encontrado
   console.log("Locale pt-br carregado:", ptBrLocale);
 
   const filteredEvents = events.filter(event => activeResources.includes(event.resourceId));
@@ -58,15 +78,13 @@ export default function Agendamento() {
   }, []);
 
   const handleEventDrop = (info: any) => {
-    // Lógica para atualizar o evento no backend/estado
     console.log('Evento movido:', info.event.title, 'para:', info.event.start);
-    // Aqui você faria uma chamada API para persistir a mudança
   };
 
   const handleDateSelect = (selectInfo: any) => {
     const title = prompt('Por favor, insira um novo título para o seu evento');
     const calendarApi = selectInfo.view.calendar;
-    calendarApi.unselect(); // clear date selection
+    calendarApi.unselect();
 
     if (title) {
       const newEvent = {
@@ -75,10 +93,27 @@ export default function Agendamento() {
         start: selectInfo.startStr,
         end: selectInfo.endStr,
         allDay: selectInfo.allDay,
-        resourceId: resources[0].id, // Default to first resource
-        color: resources[0].color,
+        resourceId: resources[0].id,
+        backgroundColor: resources[0].color,
       };
       setEvents(prev => [...prev, newEvent]);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.title && formData.start && formData.end) {
+      const newEvent = {
+        id: String(Date.now()),
+        title: formData.title,
+        start: formData.start,
+        end: formData.end,
+        resourceId: formData.resourceId,
+        backgroundColor: resources.find(r => r.id === formData.resourceId)?.color || '#3b82f6',
+      };
+      setEvents(prev => [...prev, newEvent]);
+      setFormData({ title: '', start: '', end: '', resourceId: resources[0].id });
+      setIsModalOpen(false);
     }
   };
 
@@ -115,9 +150,76 @@ export default function Agendamento() {
             ))}
           </div>
           <div className="pt-4 border-t mt-4">
-            <Button className="w-full">
-              <Plus className="h-4 w-4 mr-2" /> Novo Evento
-            </Button>
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full">
+                  <Plus className="h-4 w-4 mr-2" /> Novo Evento
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md sm:max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>Novo Evento</DialogTitle>
+                  <DialogDescription>Preencha os detalhes do novo compromisso.</DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Título</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="Ex: Reunião com cliente"
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="start">Início</Label>
+                      <Input
+                        id="start"
+                        type="datetime-local"
+                        value={formData.start}
+                        onChange={(e) => setFormData({ ...formData, start: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="end">Fim</Label>
+                      <Input
+                        id="end"
+                        type="datetime-local"
+                        value={formData.end}
+                        onChange={(e) => setFormData({ ...formData, end: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="resource">Responsável</Label>
+                    <Select value={formData.resourceId} onValueChange={(value) => setFormData({ ...formData, resourceId: value })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um responsável" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {resources.map((resource) => (
+                          <SelectItem key={resource.id} value={resource.id}>
+                            <div className="flex items-center gap-2">
+                              <span className="h-3 w-3 rounded-full" style={{ backgroundColor: resource.color }} />
+                              {resource.title}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <DialogFooter>
+                    <Button type="submit" className="w-full sm:w-auto">
+                      Criar Evento
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
         </Panel>
 
@@ -129,7 +231,7 @@ export default function Agendamento() {
             <FullCalendar
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
               initialView="timeGridWeek"
-              locale={ptBrLocale} // Usando o objeto locale encontrado
+              locale={ptBrLocale}
               headerToolbar={{
                 left: 'prev,next today',
                 center: 'title',
@@ -151,8 +253,6 @@ export default function Agendamento() {
               slotMinTime="08:00:00"
               slotMaxTime="20:00:00"
               allDaySlot={false}
-              
-              // Interações
               eventDrop={handleEventDrop}
               select={handleDateSelect}
               eventClick={(clickInfo) => {
@@ -161,8 +261,6 @@ export default function Agendamento() {
                   setEvents(prev => prev.filter(e => e.id !== clickInfo.event.id));
                 }
               }}
-              
-              // Estilização
               height="100%"
               contentHeight="auto"
             />

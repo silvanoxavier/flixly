@@ -170,7 +170,7 @@ const CreateInstanceModal = () => {
           </TabsList>
           <TabsContent value="create" className="flex-1 flex flex-col mt-4 space-y-4 overflow-hidden p-1">
             <div className="space-y-2">
-              <Label>Nome *</Label>
+              <Label>Nome<span className="text-red-500 ml-1">*</span></Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="minha-instancia-1" />
             </div>
             <div className="space-y-2">
@@ -185,7 +185,7 @@ const CreateInstanceModal = () => {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Token * (Auto-gerado)</Label>
+              <Label>Token<span className="text-red-500 ml-1">*</span></Label>
               <Input 
                 value={token} 
                 readOnly 

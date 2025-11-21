@@ -51,9 +51,6 @@ export default function Catalog() {
     <div className="flex flex-col items-center justify-center h-64 space-y-4">
       <Package className="h-12 w-12 text-destructive" />
       <h2 className="text-2xl font-bold">Erro ao carregar catálogo</h2>
-      <p className="text-muted-foreground text-center max-w-md">
-        Verifique o backend PostgreSQL/Evolution API. {error.message}
-      </p>
       <div className="flex gap-2">
         <Button onClick={() => refetch()}>Tentar novamente</Button>
         <Button variant="outline" onClick={() => window.location.reload()}>

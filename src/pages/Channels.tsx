@@ -24,7 +24,7 @@ export default function Channels() {
             <Badge variant="outline">Evolution API</Badge>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <CreateInstanceModal />
               <ManageInstanceModal />
             </div>

@@ -43,7 +43,8 @@ export default function Agendamento() {
   const [activeResources, setActiveResources] = useState<string[]>(resources.map(r => r.id));
 
   // Encontra o locale pt-br no objeto de todos os locales
-  const ptBrLocale = allLocales.locales.find(locale => locale.code === 'pt-br');
+  // allLocales pode exportar um objeto com uma propriedade 'default' que contém os locales
+  const ptBrLocale = (allLocales as any).default.find((locale: { code: string; }) => locale.code === 'pt-br');
 
   // Adiciona um console.log para verificar se o locale foi encontrado
   console.log("Locale pt-br carregado:", ptBrLocale);

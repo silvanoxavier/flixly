@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus } from "lucide-react";
+import { Plus, Edit3, Trash2 } from "lucide-react";
 
 interface Item {
   id: number;
@@ -40,9 +40,13 @@ export default function Kanban() {
   const [nextId, setNextId] = useState(4);
   const [showNewCard, setShowNewCard] = useState(false);
   const [showNewColumn, setShowNewColumn] = useState(false);
+  const [showEditColumn, setShowEditColumn] = useState(false);
+  const [editingColumnKey, setEditingColumnKey] = useState<string | null>(null);
   const [newCardTitle, setNewCardTitle] = useState("");
   const [newColumnName, setNewColumnName] = useState("");
   const [newColumnColor, setNewColumnColor] = useState("#3b82f6");
+  const [editColumnName, setEditColumnName] = useState("");
+  const [editColumnColor, setEditColumnColor] = useState("#3b82f6");
 
   const moveItem = useCallback((itemId: number, targetColumn: string) => {
     setColumns((prev) => {
@@ -86,6 +90,49 @@ export default function Kanban() {
     setNewColumnName("");
     setNewColumnColor("#3b82f6");
     setShowNewColumn(false);
+  };
+
+  const openEditColumn = (key: string) => {
+    const column = columns[key];
+    if (!column) return;
+    setEditingColumnKey(key);
+    setEditColumnName(key);
+    setEditColumnColor(column.color);
+    setShowEditColumn(true);
+  };
+
+  const saveEditColumn = () => {
+    if (!editingColumnKey || !editColumnName.trim()) return;
+    const newName = editColumnName.trim().toLowerCase();
+    if (newName !== editingColumnKey && columns[newName]) return; // Duplicado
+
+    setColumns((prev) => {
+      const newCols = { ...prev };
+      const oldColumn = newCols[editingColumnKey];
+      if (newName !== editingColumnKey) {
+        // Rename: move para novo key
+        newCols[newName] = { color: editColumnColor, items: [...oldColumn.items] };
+        delete newCols[editingColumnKey];
+      } else {
+        // Só cor
+        newCols[editingColumnKey] = { ...oldColumn, color: editColumnColor };
+      }
+      return newCols;
+    });
+
+    setShowEditColumn(false);
+    setEditingColumnKey(null);
+  };
+
+  const deleteColumn = () => {
+    if (!editingColumnKey || columns[editingColumnKey]?.items.length > 0) return;
+    setColumns((prev) => {
+      const newCols = { ...prev };
+      delete newCols[editingColumnKey!];
+      return newCols;
+    });
+    setShowEditColumn(false);
+    setEditingColumnKey(null);
   };
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, id: number) => {
@@ -179,7 +226,51 @@ export default function Kanban() {
         </Dialog>
       </div>
 
-      {/* Container cols: overflow-x-auto overflow-y-HIDDEN (sem double vertical) */}
+      {/* Modal Editar Coluna */}
+      <Dialog open={showEditColumn} onOpenChange={setShowEditColumn}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Coluna</DialogTitle>
+            <DialogDescription>Altere nome e cor de fundo</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Nome</Label>
+              <Input
+                id="edit-name"
+                value={editColumnName}
+                onChange={(e) => setEditColumnName(e.target.value)}
+                placeholder="Nome da coluna"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-color">Cor de fundo</Label>
+              <Input
+                id="edit-color"
+                type="color"
+                value={editColumnColor}
+                onChange={(e) => setEditColumnColor(e.target.value)}
+                className="w-20 h-12 border-2 border-border rounded-md cursor-pointer hover:border-primary"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={deleteColumn} 
+              disabled={!editingColumnKey || columns[editingColumnKey!]?.items.length > 0}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Deletar (vazia)
+            </Button>
+            <Button onClick={saveEditColumn} disabled={!editColumnName.trim()}>
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Container cols */}
       <div 
         className="flex gap-4 overflow-x-auto overflow-y-hidden pb-12 snap-x snap-mandatory scrollbar scrollbar-thumb-muted-foreground/80 scrollbar-track-transparent/50 [&::-webkit-scrollbar]:h-3.5 [&::-webkit-scrollbar-thumb]:rounded-full scroll-smooth h-full"
         style={{ 
@@ -190,7 +281,7 @@ export default function Kanban() {
         {Object.entries(columns).map(([key, column]) => (
           <Card 
             key={key} 
-            className="w-56 md:w-64 lg:w-72 xl:w-80 flex-shrink-0 min-h-[500px] snap-center flex flex-col overflow-hidden shadow-2xl border-0"
+            className="w-56 md:w-64 lg:w-72 xl:w-80 flex-shrink-0 min-h-[500px] snap-center flex flex-col overflow-hidden shadow-2xl border-0 relative"
             style={{ backgroundColor: column.color }}
           >
             <CardContent 
@@ -198,9 +289,19 @@ export default function Kanban() {
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, key)}
             >
-              <h3 className="font-bold capitalize text-xl tracking-tight mb-6 drop-shadow-lg">
-                {key.replace(/^\w/, (c) => c.toUpperCase())}
-              </h3>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-bold capitalize text-xl tracking-tight drop-shadow-lg flex-1">
+                  {key.replace(/^\w/, (c) => c.toUpperCase())}
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 ml-2 text-white/80 hover:text-white hover:bg-white/20"
+                  onClick={() => openEditColumn(key)}
+                >
+                  <Edit3 className="h-4 w-4" />
+                </Button>
+              </div>
               
               <div className="flex-1 space-y-3 overflow-y-auto pb-4 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent/20 [&::-webkit-scrollbar]:w-2">
                 {column.items.map((item) => (

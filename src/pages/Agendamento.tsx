@@ -6,12 +6,13 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
+// @ts-ignore: Cannot find module '@fullcalendar/core/locales/pt-br'
 import ptBrLocale from '@fullcalendar/core/locales/pt-br';
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Plus, Calendar as CalendarIcon } from 'lucide-react';
-import { PanelGroup, Panel, Handle } from "react-resizable-panels";
+import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 
 // --- Mock Data ---
 interface Resource {
@@ -110,7 +111,7 @@ export default function Agendamento() {
           </div>
         </Panel>
 
-        <Handle withHandle />
+        <PanelResizeHandle withHandle />
 
         {/* Calendário Principal */}
         <Panel defaultSize={80} minSize={50} className="p-4 bg-background/50">

@@ -15,8 +15,7 @@ import {
   Zap,
   FileBarChart, 
   Settings,
-  ChevronDown,
-  LogOut
+  ChevronDown
 } from "lucide-react";
 import { useState } from "react";
 
@@ -47,7 +46,6 @@ const navItems: NavItem[] = [
   { href: "/automations", label: "Automações", icon: Zap },
   { href: "/reports", label: "Relatórios", icon: FileBarChart },
   { href: "/settings", label: "Configurações", icon: Settings },
-  { href: "/auth", label: "Sair", icon: LogOut },
 ];
 
 interface SidebarNavProps {
@@ -62,7 +60,7 @@ export default function SidebarNav({ expanded, onNavClick }: SidebarNavProps) {
     if (!expanded) {
       setOpenSubmenu(openSubmenu === label ? null : label);
     } else {
-      setOpenSubmenu(null);
+      setOpenSubmenu(null); // Close submenu if sidebar is fully expanded
     }
   };
 
@@ -76,8 +74,8 @@ export default function SidebarNav({ expanded, onNavClick }: SidebarNavProps) {
               onClick={onNavClick}
               className={({ isActive }) =>
                 `group flex items-center rounded-lg transition-all duration-200 overflow-hidden h-11 ${
-                  isActive || item.label === "Sair"
-                    ? "bg-destructive/90 text-destructive-foreground shadow-md border border-destructive/50 hover:bg-destructive"
+                  isActive
+                    ? "bg-primary/90 text-primary-foreground shadow-md border border-primary/50"
                     : "text-muted-foreground hover:bg-accent/50 hover:text-foreground hover:shadow-sm"
                 } ${expanded ? 'pl-3 space-x-2.5 justify-start' : 'justify-center px-2.5' }`
               }
@@ -94,6 +92,7 @@ export default function SidebarNav({ expanded, onNavClick }: SidebarNavProps) {
               </span>
             </NavLink>
           ) : (
+            // Parent item with children
             <div 
               className={`group flex items-center rounded-lg transition-all duration-200 overflow-hidden h-11 cursor-pointer ${
                 openSubmenu === item.label && !expanded
@@ -118,6 +117,7 @@ export default function SidebarNav({ expanded, onNavClick }: SidebarNavProps) {
             </div>
           )}
 
+          {/* Render children if parent is active or sidebar is expanded */}
           {item.children && (expanded || openSubmenu === item.label) && (
             <div className={`pl-6 ${expanded ? 'block' : 'absolute left-full top-0 bg-card shadow-lg rounded-md py-2 w-48 z-50'}`}>
               {item.children.map((child) => (

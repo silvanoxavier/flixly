@@ -16,8 +16,14 @@ import Automations from "@/pages/Automations";
 import Reports from "@/pages/Reports";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
+import AuthPage from "@/pages/AuthPage"; // Import the new AuthPage
 
 const router = createBrowserRouter([
+  {
+    path: "/auth", // New route for authentication
+    element: <AuthPage />,
+    errorElement: <NotFound />,
+  },
   {
     path: "/",
     element: <MainLayout />,

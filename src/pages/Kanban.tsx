@@ -179,47 +179,45 @@ export default function Kanban() {
         </Dialog>
       </div>
 
-      {/* Colunas RESPONSIVAS: Mobile vertical, lg+ horizontal scroll */}
+      {/* Colunas HORIZONTAL RESPONSIVO SEMPRE: flex-row overflow-x-auto w-56→80 */}
       <div 
-        className="flex flex-col lg:flex-row lg:gap-4 lg:overflow-x-auto lg:pb-8 lg:snap-x lg:snap-mandatory scrollbar-thin lg:[&::-webkit-scrollbar]:h-2 lg:[&::-webkit-scrollbar-thumb]:rounded-full lg:scrollbar-thumb-muted-foreground/60 lg:scrollbar-track-transparent scroll-smooth h-full"
-        style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgb(148 163 184 / 0.6) transparent' }}
+        className="flex gap-4 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-thin [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full scrollbar-thumb-muted-foreground/50 scrollbar-track-transparent scroll-smooth h-full"
+        style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgb(148 163 184 / 0.5) transparent' }}
       >
         {Object.entries(columns).map(([key, column]) => (
-          <Card key={key} className="w-full lg:w-64 lg:flex-shrink-0 min-h-[400px] lg:min-h-[500px] lg:snap-center flex flex-col overflow-hidden">
-            <CardContent className="p-0 h-full flex flex-col">
-              {/* Header colorido */}
-              <div 
-                className="p-4 flex-shrink-0 bg-[color]" 
-                style={{ backgroundColor: column.color }}
-              >
-                <h3 className="font-bold capitalize text-lg tracking-tight text-white drop-shadow-sm">
-                  {key.replace(/^\w/, (c) => c.toUpperCase())}
-                </h3>
+          <Card 
+            key={key} 
+            className="w-56 md:w-64 lg:w-72 xl:w-80 flex-shrink-0 min-h-[500px] snap-center flex flex-col overflow-hidden shadow-2xl border-0"
+            style={{ backgroundColor: column.color }}
+          >
+            <CardContent 
+              className="p-6 h-full flex flex-col text-white"
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, key)}
+            >
+              {/* Header integrado */}
+              <h3 className="font-bold capitalize text-xl tracking-tight mb-6 drop-shadow-lg">
+                {key.replace(/^\w/, (c) => c.toUpperCase())}
+              </h3>
+              
+              <div className="flex-1 space-y-3 overflow-y-auto pb-4">
+                {column.items.map((item) => (
+                  <Card
+                    key={item.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, item.id)}
+                    className="p-4 bg-white/10 backdrop-blur-sm hover:bg-white/20 cursor-grab active:cursor-grabbing active:scale-[0.98] transition-all duration-200 shadow-lg border border-white/20 text-white hover:border-white/40 hover:shadow-xl"
+                  >
+                    <div className="font-semibold text-base leading-tight">{item.title}</div>
+                  </Card>
+                ))}
               </div>
-              {/* Conteúdo drop */}
-              <div 
-                className="p-4 flex-1 flex flex-col"
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, key)}
-              >
-                <div className="flex-1 space-y-2 overflow-y-auto pb-2">
-                  {column.items.map((item) => (
-                    <Card
-                      key={item.id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, item.id)}
-                      className="p-3 bg-muted/50 hover:bg-muted cursor-grab active:cursor-grabbing active:scale-[0.98] transition-all duration-200 shadow-sm border hover:border-primary/50"
-                    >
-                      <div className="font-medium text-sm">{item.title}</div>
-                    </Card>
-                  ))}
+              
+              {column.items.length === 0 && (
+                <div className="flex-1 flex items-center justify-center text-white/70 text-lg font-medium">
+                  Solte cards aqui
                 </div>
-                {column.items.length === 0 && (
-                  <div className="flex items-center justify-center text-muted-foreground text-sm h-24">
-                    Solte cards aqui
-                  </div>
-                )}
-              </div>
+              )}
             </CardContent>
           </Card>
         ))}

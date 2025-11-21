@@ -45,7 +45,13 @@ export default function MainLayout() {
   const handleMouseLeave = () => setTimeout(() => setSidebarExpanded(false), 150);
   const handleNavClick = () => setSidebarExpanded(false);
 
-  const sidebarClasses = `hidden md:fixed md:left-0 md:top-20 md:h-[calc(100vh-5rem)] md:z-${sidebarExpanded ? '50' : '40'} md:shadow-${sidebarExpanded ? 'xl' : 'sm'} md:border-r md:bg-card/95 md:overflow-hidden md:transition-all md:duration-400 md:ease-out ${sidebarExpanded ? 'md:w-64' : 'md:w-16'}`;
+  const baseSidebarClasses = "hidden md:block md:fixed md:left-0 md:top-20 md:h-[calc(100vh-5rem)] md:border-r md:bg-card/95 md:overflow-hidden md:transition-all md:duration-400 md:ease-out";
+  const expandedSidebarClasses = sidebarExpanded 
+    ? "md:w-64 md:z-50 md:shadow-xl md:shadow-primary/10" 
+    : "md:w-16 md:z-40 md:shadow-sm";
+  
+  const sidebarClasses = `${baseSidebarClasses} ${expandedSidebarClasses}`;
+
   const headerPaddingTop = 'pt-16 md:pt-20';
 
   return (
@@ -98,20 +104,24 @@ export default function MainLayout() {
         </div>
       </header>
 
-      {/* Sidebar FIXED overlay expand hover */}
-      <aside className={sidebarClasses} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      {/* Sidebar FIXED narrow/expanded overlay */}
+      <aside 
+        className={sidebarClasses} 
+        onMouseEnter={handleMouseEnter} 
+        onMouseLeave={handleMouseLeave}
+      >
         <SidebarNav expanded={sidebarExpanded} onNavClick={handleNavClick} />
       </aside>
 
-      {/* Mobile Sheet overlay */}
+      {/* Mobile Sheet */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className={`w-80 p-0 border-r bg-card max-w-xs ${headerPaddingTop} md:hidden`}>
           <SidebarNav expanded={true} onNavClick={() => setMobileOpen(false)} />
         </SheetContent>
       </Sheet>
 
-      {/* Main FIXED ml-16 (full após narrow, sem movimento) */}
-      <div className={`flex-1 flex flex-col overflow-hidden ${headerPaddingTop} md:ml-16 min-w-0`}>
+      {/* Main FIXED ml-16 (ocupa após narrow, overlay não afeta) */}
+      <div className={`flex-1 flex flex-col overflow-hidden ${headerPaddingTop} md:ml-16 min-w-0 transition-none`}>
         <main className="flex-1 overflow-auto p-4 md:p-6">
           <Outlet context={{ company: selectedCompany }} />
         </main>

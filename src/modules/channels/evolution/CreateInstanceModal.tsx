@@ -45,6 +45,23 @@ const CreateInstanceModal = () => {
   const { company } = useOutletContext<ContextType>();
   const { toast } = useToast();
 
+  // Gera token alfanumérico de 18 caracteres
+  const generateToken = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 18; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
+
+  // Gera token automaticamente ao abrir o modal
+  useEffect(() => {
+    if (open && !token) {
+      setToken(generateToken());
+    }
+  }, [open, token]);
+
   // Persistência localStorage
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -113,7 +130,9 @@ const CreateInstanceModal = () => {
       }
       toast({ title: "Instância criada na Evolution!" });
       setActiveTab("manage");
-      setName(""); setToken(""); setNumber("");
+      setName(""); 
+      setToken(generateToken()); // Regenera para próxima
+      setNumber("");
     } catch (error: any) {
       toast({ variant: "destructive", title: "Erro ao criar", description: error.response?.data?.message || error.message });
     } finally {
@@ -160,12 +179,19 @@ const CreateInstanceModal = () => {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="baileys">Baileys</SelectItem>
+                  <SelectItem value="whatsapp-cloud-api">WhatsApp Cloud API</SelectItem>
+                  <SelectItem value="evolution-api">Evolution API</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Token *</Label>
-              <Input value={token} onChange={(e) => setToken(e.target.value)} placeholder="05BBCIA62B-2E5B..." type="password" />
+              <Label>Token * (Auto-gerado)</Label>
+              <Input 
+                value={token} 
+                readOnly 
+                className="bg-muted cursor-not-allowed font-mono text-sm"
+                placeholder="Gerando token..."
+              />
             </div>
             <div className="space-y-2">
               <Label>Número (opcional)</Label>

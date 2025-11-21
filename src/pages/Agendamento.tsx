@@ -111,7 +111,7 @@ export default function Agendamento() {
           </div>
         </Panel>
 
-        <PanelResizeHandle withHandle />
+        <PanelResizeHandle />
 
         {/* Calendário Principal */}
         <Panel defaultSize={80} minSize={50} className="p-4 bg-background/50">

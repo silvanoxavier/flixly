@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Plus, Calendar as CalendarIcon } from 'lucide-react';
-import { PanelGroup, Panel, PanelHandle } from "react-resizable-panels";
+import { PanelGroup, Panel, Handle } from "react-resizable-panels";
 
 // --- Mock Data ---
 interface Resource {
@@ -110,7 +110,7 @@ export default function Agendamento() {
           </div>
         </Panel>
 
-        <PanelHandle withHandle />
+        <Handle withHandle />
 
         {/* Calendário Principal */}
         <Panel defaultSize={80} minSize={50} className="p-4 bg-background/50">

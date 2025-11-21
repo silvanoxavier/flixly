@@ -45,7 +45,7 @@ export default function MainLayout() {
   const handleMouseLeave = () => setTimeout(() => setSidebarExpanded(false), 150);
   const handleNavClick = () => setSidebarExpanded(false);
 
-  const baseSidebarClasses = "hidden md:block md:fixed md:left-0 md:top-20 md:h-[calc(100vh-5rem)] md:border-r md:bg-card/95 md:overflow-hidden md:transition-all md:duration-400 md:ease-out";
+  const baseSidebarClasses = "hidden md:block md:fixed md:left-0 md:top-20 md:h-[calc(100vh-5rem)] md:border-r md:bg-card/95 md:overflow-y-auto md:transition-all md:duration-400 md:ease-out";
   const expandedSidebarClasses = sidebarExpanded 
     ? "md:w-64 md:z-50 md:shadow-xl md:shadow-primary/10" 
     : "md:w-16 md:z-40 md:shadow-sm";

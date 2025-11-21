@@ -1,13 +1,13 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, MessageCircle, Smartphone } from "lucide-react";
+import { Users, MessageCircle, FileBarChart, Building2 } from "lucide-react";
 
 const stats = [
-  { title: "Empresas", value: "12", change: "+20%", icon: Users },
-  { title: "Clientes", value: "1.234", change: "+12%", icon: Users },
-  { title: "Mensagens", value: "5.678", change: "+8%", icon: MessageCircle },
-  { title: "Instâncias", value: "8/20", change: "+2", icon: Smartphone },
+  { title: "Empresas", value: "12", change: "+20%", icon: Building2 },
+  { title: "Chats", value: "23", change: "+5%", icon: MessageCircle },
+  { title: "Relatórios", value: "1.247", change: "+12%", icon: FileBarChart },
+  { title: "Clientes", value: "456", change: "+3%", icon: Users },
 ];
 
 export default function Dashboard() {

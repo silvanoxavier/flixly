@@ -179,10 +179,13 @@ export default function Kanban() {
         </Dialog>
       </div>
 
-      {/* Colunas HORIZONTAL RESPONSIVO SEMPRE: flex-row overflow-x-auto w-56→80 */}
+      {/* Scrollbar HORIZONTAL PROMINENTE: h-3.5 thick pb-12 espaço dedicado */}
       <div 
-        className="flex gap-4 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-thin [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full scrollbar-thumb-muted-foreground/50 scrollbar-track-transparent scroll-smooth h-full"
-        style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgb(148 163 184 / 0.5) transparent' }}
+        className="flex gap-4 overflow-x-auto pb-12 snap-x snap-mandatory scrollbar scrollbar-thumb-muted-foreground/80 scrollbar-track-transparent/50 [&::-webkit-scrollbar]:h-3.5 [&::-webkit-scrollbar-thumb]:rounded-full scroll-smooth h-full"
+        style={{ 
+          scrollbarWidth: 'thin', 
+          scrollbarColor: 'rgb(148 163 184 / 0.8) transparent' 
+        }}
       >
         {Object.entries(columns).map(([key, column]) => (
           <Card 
@@ -195,7 +198,6 @@ export default function Kanban() {
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, key)}
             >
-              {/* Header integrado */}
               <h3 className="font-bold capitalize text-xl tracking-tight mb-6 drop-shadow-lg">
                 {key.replace(/^\w/, (c) => c.toUpperCase())}
               </h3>

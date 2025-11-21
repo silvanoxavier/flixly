@@ -8,7 +8,7 @@ import Companies from "@/pages/Companies";
 import Channels from "@/pages/Channels";
 import Customers from "@/pages/Customers";
 import Chat from "@/pages/Chat";
-import Messages from "@/pages/Messages";
+import WhatsApp from "@/pages/WhatsApp";
 import Catalog from "@/pages/Catalog";
 import Kanban from "@/pages/Kanban";
 import Analytics from "@/pages/Analytics";
@@ -29,7 +29,7 @@ const router = createBrowserRouter([
       { path: "channels", element: <Channels /> },
       { path: "customers", element: <Customers /> },
       { path: "chat", element: <Chat /> },
-      { path: "messages", element: <Messages /> },
+      { path: "whatsapp", element: <WhatsApp /> },
       { path: "catalog", element: <Catalog /> },
       { path: "kanban", element: <Kanban /> },
       { path: "analytics", element: <Analytics /> },

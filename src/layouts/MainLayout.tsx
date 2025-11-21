@@ -23,7 +23,7 @@ const pageTitles: Record<string, string> = {
   "/channels": "Canais",
   "/customers": "Clientes",
   "/chat": "Chat",
-  "/messages": "Mensagens",
+  "/whatsapp": "WhatsApp",
   "/catalog": "Catálogo",
   "/kanban": "Kanban",
   "/analytics": "Análises",

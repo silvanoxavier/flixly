@@ -5,12 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Phone, Video, MoreVertical, MessageCircle, User } from "lucide-react";
 import ChatList from "../components/ChatList";
 import ChatWindow from "../components/ChatWindow";
+import MessageComposer from "../components/MessageComposer"; // Assuming MessageComposer is generic enough or will be adapted
 
 interface Chat {
   id: number;
+  name: string;
+  avatar: string;
+  status: string;
 }
 
-export default function Messages() {
+export default function WhatsApp() {
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
 
   return (
@@ -30,8 +34,8 @@ export default function Messages() {
                   <User className="h-5 w-5 text-primary-foreground" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">João Silva</h3>
-                  <p className="text-xs text-muted-foreground">online</p>
+                  <h3 className="font-semibold text-foreground">{selectedChat.name}</h3>
+                  <p className="text-xs text-muted-foreground">{selectedChat.status}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
@@ -41,6 +45,7 @@ export default function Messages() {
               </div>
             </div>
             <ChatWindow />
+            <MessageComposer />
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center text-muted-foreground">

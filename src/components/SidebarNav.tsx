@@ -24,7 +24,7 @@ const navItems = [
   { href: "/channels", label: "Canais", icon: Smartphone },
   { href: "/customers", label: "Clientes", icon: Users },
   { href: "/chat", label: "Chat", icon: MessagesSquare },
-  { href: "/messages", label: "Mensagens", icon: MessageCircle },
+  { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
   { href: "/catalog", label: "Catálogo", icon: Package },
   { href: "/kanban", label: "Kanban", icon: Columns3 },
   { href: "/analytics", label: "Análises", icon: BarChart3 },

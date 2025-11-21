@@ -17,7 +17,8 @@ import {
   Settings,
   ChevronDown,
   LogOut,
-  Calendar
+  Calendar,
+  Lock // Importar o ícone Lock
 } from "lucide-react";
 import { useState } from "react";
 
@@ -47,8 +48,9 @@ const navItems: NavItem[] = [
   { href: "/analytics", label: "Análises", icon: BarChart3 },
   { href: "/automations", label: "Automações", icon: Zap },
   { href: "/reports", label: "Relatórios", icon: FileBarChart },
-  { href: "/agendamento", label: "Agendamento", icon: Calendar }, // Adicionado Agendamento
+  { href: "/agendamento", label: "Agendamento", icon: Calendar },
   { href: "/settings", label: "Configurações", icon: Settings },
+  { href: "/admin", label: "Administração", icon: Lock }, // Adicionar o link para Admin
 ];
 
 interface SidebarNavProps {

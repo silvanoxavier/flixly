@@ -136,22 +136,22 @@ export default function Kanban() {
         </Dialog>
       </div>
 
-      {/* Colunas Kanban: Scroll horizontal FULL-WIDTH + scrollbar visível + snap */}
+      {/* Colunas RESPONSIVAS: Mobile vertical stack (w-full), lg+ horizontal scroll (w-64) */}
       <div 
-        className="flex gap-4 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-muted-foreground/60 scrollbar-track-transparent [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full scroll-smooth"
+        className="flex flex-col lg:flex-row lg:gap-4 lg:overflow-x-auto lg:pb-8 lg:snap-x lg:snap-mandatory scrollbar-thin lg:[&::-webkit-scrollbar]:h-2 lg:[&::-webkit-scrollbar-thumb]:rounded-full lg:scrollbar-thumb-muted-foreground/60 lg:scrollbar-track-transparent scroll-smooth h-full"
         style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgb(148 163 184 / 0.6) transparent' }}
       >
         {Object.entries(columns).map(([key, items]) => (
-          <Card key={key} className="w-64 flex-shrink-0 min-h-[400px] snap-center">
+          <Card key={key} className="w-full lg:w-64 lg:flex-shrink-0 min-h-[400px] lg:min-h-[500px] lg:snap-center flex flex-col">
             <CardContent 
-              className="p-4 min-h-[200px] flex flex-col h-full"
+              className="p-4 h-full flex flex-col"
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, key)}
             >
               <h3 className="font-bold capitalize mb-4 text-lg tracking-tight flex-shrink-0">
                 {key.replace(/^\w/, (c) => c.toUpperCase())}
               </h3>
-              <div className="flex-1 space-y-2 overflow-y-auto">
+              <div className="flex-1 space-y-2 overflow-y-auto pb-2">
                 {items.map((item) => (
                   <Card
                     key={item.id}
@@ -162,12 +162,12 @@ export default function Kanban() {
                     <div className="font-medium text-sm">{item.title}</div>
                   </Card>
                 ))}
+                {items.length === 0 && (
+                  <div className="flex items-center justify-center text-muted-foreground text-sm h-full">
+                    Solte cards aqui
+                  </div>
+                )}
               </div>
-              {items.length === 0 && (
-                <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm mt-4">
-                  Solte cards aqui
-                </div>
-              )}
             </CardContent>
           </Card>
         ))}

@@ -10,7 +10,7 @@ import listPlugin from '@fullcalendar/list';
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Plus, Calendar as CalendarIcon, Chrome } from 'lucide-react'; // Corrigido: RefreshCw removido, Google substituído por Chrome
+import { Plus, Calendar as CalendarIcon, Chrome } from 'lucide-react';
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import {
   Dialog,
@@ -29,14 +29,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { showSuccess, showError } from "@/utils/toast"; // Importando toasts
+import { showSuccess, showError } from "@/utils/toast";
 
-// --- Context Type ---
 interface ContextType {
   company: { id: string; name: string; instance: string };
 }
 
-// --- Mock Data ---
 interface Resource {
   id: string;
   title: string;
@@ -44,9 +42,9 @@ interface Resource {
 }
 
 const resources: Resource[] = [
-  { id: 'r1', title: 'Vendedor A', color: '#3b82f6' }, // blue
-  { id: 'r2', title: 'Vendedor B', color: '#10b981' }, // green
-  { id: 'r3', title: 'Suporte', color: '#f59e0b' }, // amber
+  { id: 'r1', title: 'Vendedor A', color: '#3b82f6' },
+  { id: 'r2', title: 'Vendedor B', color: '#10b981' },
+  { id: 'r3', title: 'Suporte', color: '#f59e0b' },
 ];
 
 interface CalendarEvent {
@@ -58,7 +56,6 @@ interface CalendarEvent {
   backgroundColor: string;
 }
 
-// --- Componente Principal ---
 export default function Agendamento() {
   const { company } = useOutletContext<ContextType>();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -73,7 +70,6 @@ export default function Agendamento() {
     resourceId: resources[0].id,
   });
 
-  // Carregar eventos iniciais (simulando fetch)
   useState(() => {
     const initialEvents = [
       { id: '1', title: 'Reunião Cliente X', start: '2024-10-20T10:00:00', end: '2024-10-20T12:00:00', resourceId: 'r1', backgroundColor: resources[0].color },
@@ -105,12 +101,12 @@ export default function Agendamento() {
   const handleDateSelect = (selectInfo: any) => {
     setFormData({
       title: '',
-      start: selectInfo.startStr.substring(0, 16), // Formato YYYY-MM-DDTHH:mm
+      start: selectInfo.startStr.substring(0, 16),
       end: selectInfo.endStr.substring(0, 16),
       resourceId: resources[0].id,
     });
     setIsNewEventModalOpen(true);
-    selectInfo.view.calendar.unselect(); // clear date selection
+    selectInfo.view.calendar.unselect();
   };
 
   const handleNewEventSubmit = (e: React.FormEvent) => {
@@ -182,7 +178,6 @@ export default function Agendamento() {
   };
 
   const handleSyncGoogleCalendar = () => {
-    // Simula a integração com o Google Calendar
     showSuccess("Sincronizando com o Google Calendar...");
     setTimeout(() => {
       showSuccess("Google Calendar sincronizado com sucesso!");
@@ -307,7 +302,7 @@ export default function Agendamento() {
             <FullCalendar
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
               initialView="timeGridWeek"
-              locale="pt-br" // Usando o locale nativo do FullCalendar
+              locale="pt-br"
               headerToolbar={{
                 left: 'prev,next today',
                 center: 'title',
@@ -333,7 +328,7 @@ export default function Agendamento() {
               // Interações
               eventDrop={handleEventDrop}
               select={handleDateSelect}
-              eventClick={handleEventClick} // Abre modal de edição
+              eventClick={handleEventClick}
               
               // Estilização
               height="100%"

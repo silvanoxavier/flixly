@@ -15,12 +15,13 @@ import Analytics from "@/pages/Analytics";
 import Automations from "@/pages/Automations";
 import Reports from "@/pages/Reports";
 import Settings from "@/pages/Settings";
+import Agendamento from "@/pages/Agendamento";
 import NotFound from "@/pages/NotFound";
-import AuthPage from "@/pages/AuthPage"; // Import the new AuthPage
+import AuthPage from "@/pages/AuthPage";
 
 const router = createBrowserRouter([
   {
-    path: "/auth", // New route for authentication
+    path: "/auth",
     element: <AuthPage />,
     errorElement: <NotFound />,
   },
@@ -42,6 +43,7 @@ const router = createBrowserRouter([
       { path: "automations", element: <Automations /> },
       { path: "reports", element: <Reports /> },
       { path: "settings", element: <Settings /> },
+      { path: "agendamento", element: <Agendamento /> },
     ],
   },
   {

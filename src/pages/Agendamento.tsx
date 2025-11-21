@@ -6,13 +6,16 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
-// @ts-ignore: Cannot find module '@fullcalendar/core/locales/pt-br'
-import ptBrLocale from '@fullcalendar/core/locales/pt-br';
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Plus, Calendar as CalendarIcon } from 'lucide-react';
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
+
+// Importa o objeto de locale diretamente, se disponível
+// Se o erro persistir, pode ser necessário instalar @fullcalendar/core/locales-all
+// ou verificar a configuração do Vite para alias de módulos.
+import * as allLocales from '@fullcalendar/core/locales-all';
 
 // --- Mock Data ---
 interface Resource {
@@ -38,6 +41,12 @@ const initialEvents = [
 export default function Agendamento() {
   const [events, setEvents] = useState(initialEvents);
   const [activeResources, setActiveResources] = useState<string[]>(resources.map(r => r.id));
+
+  // Encontra o locale pt-br no objeto de todos os locales
+  const ptBrLocale = allLocales.locales.find(locale => locale.code === 'pt-br');
+
+  // Adiciona um console.log para verificar se o locale foi encontrado
+  console.log("Locale pt-br carregado:", ptBrLocale);
 
   const filteredEvents = events.filter(event => activeResources.includes(event.resourceId));
 
@@ -119,7 +128,7 @@ export default function Agendamento() {
             <FullCalendar
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
               initialView="timeGridWeek"
-              locale={ptBrLocale}
+              locale={ptBrLocale} // Usando o objeto locale encontrado
               headerToolbar={{
                 left: 'prev,next today',
                 center: 'title',

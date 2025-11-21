@@ -15,7 +15,8 @@ import {
   Zap,
   FileBarChart, 
   Settings,
-  ChevronDown
+  ChevronDown,
+  LogOut
 } from "lucide-react";
 import { useState } from "react";
 
@@ -46,6 +47,7 @@ const navItems: NavItem[] = [
   { href: "/automations", label: "Automações", icon: Zap },
   { href: "/reports", label: "Relatórios", icon: FileBarChart },
   { href: "/settings", label: "Configurações", icon: Settings },
+  { href: "/auth", label: "Sair", icon: LogOut },
 ];
 
 interface SidebarNavProps {
@@ -77,16 +79,16 @@ export default function SidebarNav({ expanded, onNavClick }: SidebarNavProps) {
                   isActive
                     ? "bg-primary/90 text-primary-foreground shadow-md border border-primary/50"
                     : "text-muted-foreground hover:bg-accent/50 hover:text-foreground hover:shadow-sm"
-                } ${expanded ? 'pl-3 space-x-2.5 justify-start' : 'justify-center px-2.5' }`
+                } ${expanded ? 'pl-3 space-x-2.5 justify-start' : 'justify-center px-2.5' } ${item.label === 'Sair' ? 'mt-auto border-t border-border/50 pt-4 mt-8' : ''}`
               }
             >
-              <item.icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${expanded ? 'scale-105' : 'group-hover:scale-105'}`} />
+              <item.icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${expanded ? 'scale-105' : 'group-hover:scale-105'} ${item.label === 'Sair' ? 'text-destructive' : ''}`} />
               <span 
                 className={`font-medium whitespace-nowrap transition-all duration-300 origin-left text-sm ${
                   expanded 
                     ? 'opacity-100 scale-100 translate-x-0 w-auto ml-2.5' 
                     : 'opacity-0 scale-75 -translate-x-2 w-0 ml-0 invisible'
-                }`}
+                } ${item.label === 'Sair' ? 'text-destructive' : ''}`}
               >
                 {item.label}
               </span>

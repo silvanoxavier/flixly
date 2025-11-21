@@ -75,6 +75,11 @@ export default function AuthPage() {
               <Button className="w-full">Registrar</Button>
             </TabsContent>
           </Tabs>
+          <div className="mt-6 pt-6 border-t border-border">
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/dashboard">Ir para Dashboard (Teste)</Link>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

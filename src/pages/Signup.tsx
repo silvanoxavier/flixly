@@ -16,7 +16,7 @@ import { showError, showSuccess } from '@/utils/toast';
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
-import { formatCnpj, isValidCnpj } from '@/utils/cnpj'; // Importar funções de CNPJ
+import { formatCnpj, isValidCnpj } from '@/utils/cnpj';
 
 const formSchema = z.object({
   nome_empresa: z.string().min(3, 'Nome da empresa deve ter pelo menos 3 caracteres'),
@@ -79,7 +79,7 @@ export default function Signup() {
 
   const onSubmit = async (values: FormData) => {
     try {
-      // 1. Signup Supabase Auth
+      // 1. Signup Supabase Auth (metadata first_name/phone → trigger cria profile)
       const { data, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -95,21 +95,21 @@ export default function Signup() {
 
       if (!data.user) throw new Error('Falha no cadastro');
 
-      // 2. Criar empresa
+      // 2. Criar empresa (super_admin pode gerenciar sem plano restrito)
       const { data: empresaData, error: empError } = await supabase
         .from('empresas')
         .insert({
           nome_fantasia: values.nome_empresa,
-          cnpj: values.cnpj.replace(/[^\d]+/g, ''), // Salvar CNPJ limpo no banco
+          cnpj: values.cnpj.replace(/[^\d]+/g, ''), // CNPJ limpo
           razao_social: values.nome_empresa,
-          plano_id: values.plano_id,
+          plano_id: values.plano_id, // Opcional para super_admin
         })
         .select('id')
         .single();
 
       if (empError) throw empError;
 
-      // 3. Associar cliente à empresa
+      // 3. Associar user à empresa (clientes_empresas)
       const { error: linkError } = await supabase
         .from('clientes_empresas')
         .insert({
@@ -119,10 +119,8 @@ export default function Signup() {
 
       if (linkError) throw linkError;
 
-      // 4. Update profile com phone (se não veio via metadata)
-      await supabase.from('profiles').update({ phone: values.whatsapp }).eq('id', data.user.id);
-
-      showSuccess('Conta criada com sucesso! Verifique seu e-mail para confirmar.');
+      // Trigger já criou/atualizou profile com role/first_name/phone
+      showSuccess('Conta criada! Verifique e-mail para confirmar (primeiro user=super_admin).');
       navigate('/login');
     } catch (error: any) {
       showError(error.message || 'Erro no cadastro');
@@ -137,9 +135,7 @@ export default function Signup() {
             <span className="font-black text-xl text-primary-foreground">F</span>
           </div>
           <CardTitle className="text-2xl text-center">Criar conta</CardTitle>
-          <CardDescription className="text-center">
-            Crie sua conta Flixly e comece agora
-          </CardDescription>
+          <CardDescription className="text-center">Crie sua conta Flixly (1º user=Super Admin)</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -166,12 +162,12 @@ export default function Signup() {
                     <FormControl>
                       <Input
                         placeholder="12.345.678/0001-90"
-                        {...field}
+                        value={field.value}
                         onChange={(e) => {
-                          const formattedCnpj = formatCnpj(e.target.value);
-                          field.onChange(formattedCnpj);
+                          const formatted = formatCnpj(e.target.value);
+                          field.onChange(formatted);
                         }}
-                        maxLength={18} // Limita o tamanho máximo do campo com a máscara
+                        maxLength={18}
                       />
                     </FormControl>
                     <FormMessage />
@@ -197,7 +193,7 @@ export default function Signup() {
                   name="whatsapp"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>WhatsApp Responsável</FormLabel>
+                      <FormLabel>WhatsApp</FormLabel>
                       <FormControl>
                         <Input placeholder="11999999999" {...field} />
                       </FormControl>
@@ -224,8 +220,8 @@ export default function Signup() {
                 name="plano_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Plano</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormLabel>Plano (opcional para Super Admin)</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione um plano" />
@@ -234,10 +230,7 @@ export default function Signup() {
                       <SelectContent>
                         {plans?.map((plan) => (
                           <SelectItem key={plan.id} value={plan.id}>
-                            <div className="flex flex-col">
-                              <span>{plan.name}</span>
-                              <span className="text-sm text-muted-foreground">R$ {plan.price}</span>
-                            </div>
+                            {plan.name} - R$ {plan.price}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -267,7 +260,7 @@ export default function Signup() {
                     <FormItem>
                       <FormLabel>Confirmar Senha</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="Confirme a senha" {...field} />
+                        <Input type="password" placeholder="Confirme senha" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -280,35 +273,28 @@ export default function Signup() {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-0">
                     <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel className="font-normal">
                         Aceito os{' '}
-                        <Link to="/terms" className="underline text-primary">
-                          Termos de Uso
-                        </Link>{' '}
+                        <Link to="/terms" className="underline text-primary">Termos</Link>{' '}
                         e{' '}
-                        <Link to="/privacy" className="underline text-primary">
-                          Política de Privacidade
-                        </Link>
+                        <Link to="/privacy" className="underline text-primary">Privacidade</Link>
                       </FormLabel>
                     </div>
                   </FormItem>
                 )}
               />
               <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                Criar Conta
+                Criar Conta (Super Admin se 1º)
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-2">
           <Link to="/login" className="text-sm text-center text-primary underline">
-            Já tem conta? Faça login
+            Já tem conta? Login
           </Link>
         </CardFooter>
       </Card>

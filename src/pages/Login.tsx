@@ -76,6 +76,13 @@ export default function Login() {
     navigate('/dashboard', { replace: true });
   };
 
+  const handleDemoClick = () => {
+    // Ativa modo demo (bypass auth guards)
+    localStorage.setItem('demoMode', 'true');
+    // Força reload completo para bypass SPA guards
+    window.location.href = '/dashboard';
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-muted p-4">
       <Card className="w-full max-w-md">
@@ -129,7 +136,7 @@ export default function Login() {
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-2">
-          <Button variant="outline" className="w-full" onClick={() => navigate('/dashboard')}>
+          <Button variant="outline" className="w-full" onClick={handleDemoClick}>
             🚀 Demo Dashboard (Skip Login)
           </Button>
           <Link to="/signup" className="text-sm text-center text-primary underline">

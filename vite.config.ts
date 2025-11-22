@@ -6,7 +6,7 @@ import path from "path";
 export default defineConfig(() => ({
   server: {
     host: "::",
-    port: 8080,
+    port: 32136, // Alterado para 32136 para corresponder à URL do Supabase
   },
   plugins: [dyadComponentTagger(), react()],
   resolve: {

@@ -80,7 +80,7 @@ export default function Signup() {
 
   const onSubmit = async (values: FormData) => {
     try {
-      const { data, error: authError } = await supabase.auth.signUp({
+      const { error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
@@ -95,47 +95,12 @@ export default function Signup() {
         throw authError;
       }
 
-      if (!data.user) {
-        // This case happens if email confirmation is enabled and user is not immediately signed in.
-        // The handle_new_user trigger will not fire until the user confirms their email.
-        showSuccess('Cadastro realizado! Verifique seu e-mail para confirmar sua conta e faça login.');
-        form.reset();
-        navigate('/login');
-        return; // Exit early as user needs to confirm email
-      }
-
-      // If user is immediately signed in (email confirmation disabled or already confirmed)
-      // 2. Criar empresa
-      const { data: empresaData, error: empError } = await supabase
-        .from('empresas')
-        .insert({
-          nome_fantasia: values.nome_empresa,
-          cnpj: values.cnpj.replace(/[^\d]+/g, ''),
-          razao_social: values.nome_empresa,
-          plano_id: values.plano_id,
-        })
-        .select('id')
-        .single();
-
-      if (empError) {
-        throw empError;
-      }
-
-      // 3. Associar user à empresa (clientes_empresas)
-      const { error: linkError } = await supabase
-        .from('clientes_empresas')
-        .insert({
-          user_id: data.user.id,
-          empresa_id: empresaData.id,
-        });
-
-      if (linkError) {
-        throw linkError;
-      }
-
-      showSuccess('Conta criada com sucesso! Você já pode fazer login.');
+      // Sempre mostrar mensagem de confirmação de e-mail, pois o Supabase exige
+      // a confirmação para que o usuário possa fazer login.
+      showSuccess('Cadastro realizado! Verifique seu e-mail para confirmar sua conta e faça login.');
       form.reset();
       navigate('/login');
+      
     } catch (error: any) {
       showError(error.message || 'Erro no cadastro');
     }
@@ -316,7 +281,7 @@ export default function Signup() {
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-2">
-          <Link to="/login" className="text-sm text-center text-primary underline">
+          <Link to="/signup" className="text-sm text-center text-primary underline">
             Já tem conta? Login
           </Link>
         </CardFooter>

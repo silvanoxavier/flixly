@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Bell, CheckCircle2 } from 'lucide-react';
-import { Badge, Button } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -35,7 +36,6 @@ export default function NotificationsMenu() {
 
     fetchNotifications();
 
-    // Realtime
     const channel = supabase.channel('notifications');
     channel.on('postgres_changes', 
       { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${session.user.id}` },

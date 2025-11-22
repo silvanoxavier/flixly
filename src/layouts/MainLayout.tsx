@@ -4,15 +4,17 @@ import { useState, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Menu, Search, Sun, Moon, Monitor, Building2 } from "lucide-react";
+import { Menu, Search, Sun, Moon, Monitor } from "lucide-react";
 import { useTheme } from "../providers/ThemeProvider";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import SidebarNav from "~/components/SidebarNav";
 import { useAuth } from "../providers/AuthProvider";
 import { supabase } from '@/lib/supabase';
 import { Skeleton } from "@/components/ui/skeleton";
+import UserInfo from "@/components/UserInfo";
+import NotificationsMenu from "@/components/NotificationsMenu";
+import ChatNotificationBell from "@/components/ChatNotificationBell";
 
 interface Company {
   empresa_id: string;
@@ -27,19 +29,16 @@ export default function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
-  const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [companiesLoading, setCompaniesLoading] = useState(true);
   const { setTheme } = useTheme();
 
-  // Protect: redirect to auth if no session
   useEffect(() => {
     if (!loading && !session) {
       navigate('/auth', { replace: true });
     }
   }, [loading, session, navigate]);
 
-  // Fetch real companies via RPC get_client_companies
   useEffect(() => {
     if (!session?.user.id) return;
 
@@ -50,8 +49,7 @@ export default function MainLayout() {
           client_user_id: session.user.id
         });
         if (error) throw error;
-        setCompanies(data || []);
-        if (data.length > 0) setSelectedCompany(data[0]);
+        if (data && data.length > 0) setSelectedCompany(data[0]);
       } catch (error) {
         console.error('Erro companies:', error);
       } finally {
@@ -70,7 +68,6 @@ export default function MainLayout() {
     "/": "Início",
     "/dashboard": "Dashboard",
     "/companies": "Empresas",
-    // ... outros
   };
 
   const currentTitle = pageTitles[location.pathname as keyof typeof pageTitles] || "Flixly";
@@ -89,7 +86,6 @@ export default function MainLayout() {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      {/* Header */}
       <header className="fixed top-0 left-0 right-0 h-16 md:h-20 border-b bg-card/90 backdrop-blur-sm z-50 flex items-center px-4 md:px-6">
         <div className="flex items-center space-x-3 min-w-0 flex-1 max-w-md">
           <Button variant="ghost" size="icon" onClick={() => setMobileOpen(true)} className="md:hidden">
@@ -111,25 +107,10 @@ export default function MainLayout() {
             <Input placeholder="Pesquisar mensagens, clientes..." className="pl-10 w-full h-12 rounded-full" value={globalSearch} onChange={(e) => setGlobalSearch(e.target.value)} />
           </div>
         </div>
-        <div className="flex items-center space-x-2 min-w-0 flex-1 max-w-md justify-end">
-          <Select value={selectedCompany?.empresa_id || ''} onValueChange={(id) => {
-            const company = companies.find(c => c.empresa_id === id);
-            setSelectedCompany(company || null);
-          }}>
-            <SelectTrigger className="w-44 md:w-48 h-12">
-              <SelectValue placeholder="Selecione empresa" />
-            </SelectTrigger>
-            <SelectContent>
-              {companies.map(c => (
-                <SelectItem key={c.empresa_id} value={c.empresa_id}>
-                  <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4" />
-                    {c.nome_fantasia} <span className="text-xs text-muted-foreground ml-2">({c.cnpj})</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex items-center space-x-4 min-w-0 flex-1 max-w-md justify-end">
+          <UserInfo company={selectedCompany} />
+          <NotificationsMenu />
+          <ChatNotificationBell />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-12 w-12">
@@ -147,7 +128,6 @@ export default function MainLayout() {
         </div>
       </header>
 
-      {/* Sidebar */}
       <aside 
         className={sidebarClasses} 
         onMouseEnter={handleMouseEnter} 
@@ -156,14 +136,12 @@ export default function MainLayout() {
         <SidebarNav expanded={sidebarExpanded} onNavClick={handleNavClick} />
       </aside>
 
-      {/* Mobile Sheet */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className={`w-80 p-0 border-r bg-card max-w-xs ${headerPaddingTop} md:hidden`}>
           <SidebarNav expanded={true} onNavClick={() => setMobileOpen(false)} />
         </SheetContent>
       </Sheet>
 
-      {/* Main content */}
       <div className={`flex-1 flex flex-col overflow-hidden ${headerPaddingTop} md:ml-16 min-w-0 transition-none`}>
         <main className="flex-1 overflow-auto p-4 md:p-6">
           <Outlet context={{ company: selectedCompany }} />

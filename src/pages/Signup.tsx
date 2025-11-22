@@ -80,37 +80,51 @@ export default function Signup() {
 
   const onSubmit = async (values: FormData) => {
     try {
-      // 1. Signup Supabase Auth (passando first_name e phone no metadata)
+      console.log('Attempting Supabase signUp with:', values.email, values.nome_responsavel, values.whatsapp);
       const { data, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
           data: {
             first_name: values.nome_responsavel,
-            phone: values.whatsapp, // Passando o número de telefone limpo
+            phone: values.whatsapp,
           },
         },
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        console.error('Supabase Auth SignUp Error:', authError);
+        throw authError;
+      }
 
-      if (!data.user) throw new Error('Falha no cadastro');
+      console.log('Supabase Auth SignUp Success Data:', data);
+
+      if (!data.user) {
+        console.error('Supabase Auth SignUp: No user data returned despite no error.');
+        throw new Error('Falha no cadastro: Nenhum usuário retornado.');
+      }
 
       // 2. Criar empresa
+      console.log('Creating company for user:', data.user.id);
       const { data: empresaData, error: empError } = await supabase
         .from('empresas')
         .insert({
           nome_fantasia: values.nome_empresa,
-          cnpj: values.cnpj.replace(/[^\d]+/g, ''), // CNPJ limpo
+          cnpj: values.cnpj.replace(/[^\d]+/g, ''),
           razao_social: values.nome_empresa,
           plano_id: values.plano_id,
         })
         .select('id')
         .single();
 
-      if (empError) throw empError;
+      if (empError) {
+        console.error('Supabase Company Insert Error:', empError);
+        throw empError;
+      }
+      console.log('Company created:', empresaData);
 
       // 3. Associar user à empresa (clientes_empresas)
+      console.log('Linking user to company:', data.user.id, empresaData.id);
       const { error: linkError } = await supabase
         .from('clientes_empresas')
         .insert({
@@ -118,12 +132,17 @@ export default function Signup() {
           empresa_id: empresaData.id,
         });
 
-      if (linkError) throw linkError;
+      if (linkError) {
+        console.error('Supabase Link User to Company Error:', linkError);
+        throw linkError;
+      }
+      console.log('User linked to company successfully.');
 
       showSuccess('Conta criada com sucesso! Verifique seu e-mail para confirmar e faça login.');
-      form.reset(); // Resetar o formulário
+      form.reset();
       navigate('/login');
     } catch (error: any) {
+      console.error('Catch block error:', error);
       showError(error.message || 'Erro no cadastro');
     }
   };

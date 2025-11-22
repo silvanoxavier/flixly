@@ -296,7 +296,7 @@ export default function Signup() {
                 )}
               />
               <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                Criar Conta (Super Admin se 1º)
+                Criar Conta
               </Button>
             </form>
           </Form>

@@ -89,7 +89,7 @@ export default function Login() {
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-2">
-          <Link href="/signup" className="text-sm text-center text-primary underline">
+          <Link to="/signup" className="text-sm text-center text-primary underline">
             Não tem conta? Crie agora
           </Link>
         </CardFooter>

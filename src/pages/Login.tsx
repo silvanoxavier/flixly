@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate, useSearchParams } from 'react-router-dom'; // Importar useSearchParams
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,7 +25,7 @@ type FormData = z.infer<typeof formSchema>;
 export default function Login() {
   const navigate = useNavigate();
   const { session } = useAuth();
-  const [searchParams] = useSearchParams(); // Hook para ler parâmetros da URL
+  const [searchParams] = useSearchParams();
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { email: '', password: '' },
@@ -33,59 +33,46 @@ export default function Login() {
 
   useEffect(() => {
     if (session) {
-      console.log('Sessão detectada, redirecionando para dashboard...', session.user.email);
       navigate('/dashboard', { replace: true });
     }
   }, [session, navigate]);
 
-  // Novo useEffect para lidar com a confirmação de e-mail
+  // Confirmação de e-mail via URL params
   useEffect(() => {
     const type = searchParams.get('type');
     const accessToken = searchParams.get('access_token');
     const refreshToken = searchParams.get('refresh_token');
 
     if (type === 'signup' && accessToken && refreshToken) {
-      console.log('Parâmetros de confirmação de e-mail detectados. Tentando finalizar sessão...');
-      // Supabase automaticamente lida com a sessão quando os tokens estão na URL
-      // Mas podemos forçar a atualização da sessão para garantir
       supabase.auth.setSession({
         access_token: accessToken,
         refresh_token: refreshToken,
       }).then(({ error }) => {
         if (error) {
-          console.error('Erro ao definir sessão após confirmação:', error.message);
-          showError('Erro ao confirmar e-mail. Tente fazer login.');
+          showError('Erro ao confirmar e-mail. Tente login manual.');
         } else {
-          showSuccess('E-mail confirmado com sucesso! Redirecionando para o dashboard.');
+          showSuccess('E-mail confirmado! Redirecionando...');
           navigate('/dashboard', { replace: true });
         }
       });
     }
   }, [searchParams, navigate]);
 
-
   const onSubmit = async (data: FormData) => {
-    console.log('Form submit chamado com:', data.email);
     const { error } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
     });
 
-    console.log('Supabase response:', { error });
-
     if (error) {
-      console.error('Erro de login:', error.message, error.status);
-      let errorMessage = 'Erro no login. Verifique suas credenciais.';
-      
-      if (error.status === 400) errorMessage = 'E-mail ou senha inválidos.';
-      else if (error.status === 429) errorMessage = 'Muitas tentativas. Tente novamente em 1 minuto.';
-      else if (error.message.includes('Email not confirmed')) errorMessage = 'Confirme seu e-mail antes de logar.';
-      
-      showError(errorMessage);
+      let msg = 'Erro no login.';
+      if (error.status === 400) msg = 'E-mail/senha inválidos.';
+      else if (error.message.includes('Email not confirmed')) msg = 'Confirme seu e-mail primeiro.';
+      showError(msg);
       return;
     }
 
-    showSuccess('Login realizado com sucesso! Redirecionando...');
+    showSuccess('Login OK!');
     navigate('/dashboard', { replace: true });
   };
 
@@ -96,10 +83,8 @@ export default function Login() {
           <div className="mx-auto h-12 w-12 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center mb-4">
             <span className="font-black text-xl text-primary-foreground">F</span>
           </div>
-          <CardTitle className="text-2xl text-center">Bem-vindo de volta</CardTitle>
-          <CardDescription className="text-center">
-            Faça login na sua conta Flixly
-          </CardDescription>
+          <CardTitle className="text-2xl text-center">Bem-vindo</CardTitle>
+          <CardDescription className="text-center">Faça login na Flixly</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -144,8 +129,11 @@ export default function Login() {
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-2">
+          <Button variant="outline" className="w-full" onClick={() => navigate('/dashboard')}>
+            🚀 Demo Dashboard (Skip Login)
+          </Button>
           <Link to="/signup" className="text-sm text-center text-primary underline">
-            Não tem conta? Crie agora
+            Criar conta
           </Link>
         </CardFooter>
       </Card>

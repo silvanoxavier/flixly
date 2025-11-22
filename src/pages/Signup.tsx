@@ -229,7 +229,7 @@ export default function Signup() {
                 name="plano_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Plano (opcional para Super Admin)</FormLabel>
+                    <FormLabel>Plano</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>

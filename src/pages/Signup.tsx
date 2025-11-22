@@ -17,6 +17,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
 import { formatCnpj, isValidCnpj } from '@/utils/cnpj';
+import { formatPhoneNumber } from '@/utils/phone'; // Importar função de formatação de telefone
 
 const formSchema = z.object({
   nome_empresa: z.string().min(3, 'Nome da empresa deve ter pelo menos 3 caracteres'),
@@ -26,7 +27,7 @@ const formSchema = z.object({
       return isValidCnpj(cleanedCnpj);
     }, 'CNPJ inválido'),
   nome_responsavel: z.string().min(2, 'Nome responsável inválido'),
-  whatsapp: z.string().regex(/^\d{10,11}$/, 'WhatsApp inválido (ex: 11999999999)'),
+  whatsapp: z.string().regex(/^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/, 'WhatsApp inválido (ex: (11) 99999-9999)').transform(val => val.replace(/\D/g, '')), // Transforma para salvar limpo
   email: z.string().email('E-mail inválido'),
   plano_id: z.string({ required_error: 'Selecione um plano' }),
   password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
@@ -79,14 +80,14 @@ export default function Signup() {
 
   const onSubmit = async (values: FormData) => {
     try {
-      // 1. Signup Supabase Auth (metadata first_name/phone → trigger cria profile)
+      // 1. Signup Supabase Auth (passando first_name e phone no metadata)
       const { data, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
           data: {
             first_name: values.nome_responsavel,
-            phone: values.whatsapp,
+            phone: values.whatsapp, // Passando o número de telefone limpo
           },
         },
       });
@@ -95,14 +96,14 @@ export default function Signup() {
 
       if (!data.user) throw new Error('Falha no cadastro');
 
-      // 2. Criar empresa (super_admin pode gerenciar sem plano restrito)
+      // 2. Criar empresa
       const { data: empresaData, error: empError } = await supabase
         .from('empresas')
         .insert({
           nome_fantasia: values.nome_empresa,
           cnpj: values.cnpj.replace(/[^\d]+/g, ''), // CNPJ limpo
           razao_social: values.nome_empresa,
-          plano_id: values.plano_id, // Opcional para super_admin
+          plano_id: values.plano_id,
         })
         .select('id')
         .single();
@@ -119,7 +120,6 @@ export default function Signup() {
 
       if (linkError) throw linkError;
 
-      // Trigger já criou/atualizou profile com role/first_name/phone
       showSuccess('Conta criada! Verifique e-mail para confirmar (primeiro user=super_admin).');
       navigate('/login');
     } catch (error: any) {
@@ -162,7 +162,7 @@ export default function Signup() {
                     <FormControl>
                       <Input
                         placeholder="12.345.678/0001-90"
-                        value={field.value}
+                        {...field}
                         onChange={(e) => {
                           const formatted = formatCnpj(e.target.value);
                           field.onChange(formatted);
@@ -195,7 +195,16 @@ export default function Signup() {
                     <FormItem>
                       <FormLabel>WhatsApp</FormLabel>
                       <FormControl>
-                        <Input placeholder="11999999999" {...field} />
+                        <Input
+                          placeholder="(11) 99999-9999"
+                          {...field}
+                          value={formatPhoneNumber(field.value)} // Aplica a máscara para exibição
+                          onChange={(e) => {
+                            const formatted = formatPhoneNumber(e.target.value);
+                            field.onChange(formatted); // Salva o valor mascarado no estado do formulário
+                          }}
+                          maxLength={15} // (XX) XXXXX-XXXX
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

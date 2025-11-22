@@ -44,14 +44,17 @@ export default function Login() {
     const refreshToken = searchParams.get('refresh_token');
 
     if (type === 'signup' && accessToken && refreshToken) {
+      // Tenta definir a sessão com os tokens da URL
       supabase.auth.setSession({
         access_token: accessToken,
         refresh_token: refreshToken,
       }).then(({ error }) => {
         if (error) {
+          console.error("Erro ao definir sessão após confirmação de e-mail:", error);
           showError('Erro ao confirmar e-mail. Tente login manual.');
         } else {
           showSuccess('E-mail confirmado! Redirecionando...');
+          // Limpa os parâmetros da URL para evitar reprocessamento
           navigate('/dashboard', { replace: true });
         }
       });
@@ -74,13 +77,6 @@ export default function Login() {
 
     showSuccess('Login OK!');
     navigate('/dashboard', { replace: true });
-  };
-
-  const handleDemoClick = () => {
-    // Ativa modo demo (bypass auth guards)
-    localStorage.setItem('demoMode', 'true');
-    // Força reload completo para bypass SPA guards
-    window.location.href = '/dashboard';
   };
 
   return (
@@ -136,9 +132,6 @@ export default function Login() {
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-2">
-          <Button variant="outline" className="w-full" onClick={handleDemoClick}>
-            🚀 Demo Dashboard (Skip Login)
-          </Button>
           <Link to="/signup" className="text-sm text-center text-primary underline">
             Criar conta
           </Link>

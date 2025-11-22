@@ -17,7 +17,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
 import { formatCnpj, isValidCnpj } from '@/utils/cnpj';
-import { formatPhoneNumber } from '@/utils/phone'; // Importar função de formatação de telefone
+import { formatPhoneNumber } from '@/utils/phone';
 
 const formSchema = z.object({
   nome_empresa: z.string().min(3, 'Nome da empresa deve ter pelo menos 3 caracteres'),
@@ -27,7 +27,7 @@ const formSchema = z.object({
       return isValidCnpj(cleanedCnpj);
     }, 'CNPJ inválido'),
   nome_responsavel: z.string().min(2, 'Nome responsável inválido'),
-  whatsapp: z.string().regex(/^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/, 'WhatsApp inválido (ex: (11) 99999-9999)').transform(val => val.replace(/\D/g, '')), // Transforma para salvar limpo
+  whatsapp: z.string().regex(/^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/, 'WhatsApp inválido (ex: (11) 99999-9999)').transform(val => val.replace(/\D/g, '')),
   email: z.string().email('E-mail inválido'),
   plano_id: z.string({ required_error: 'Selecione um plano' }),
   password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
@@ -80,7 +80,6 @@ export default function Signup() {
 
   const onSubmit = async (values: FormData) => {
     try {
-      console.log('Attempting Supabase signUp with:', values.email, values.nome_responsavel, values.whatsapp);
       const { data, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -93,19 +92,20 @@ export default function Signup() {
       });
 
       if (authError) {
-        console.error('Supabase Auth SignUp Error:', authError);
         throw authError;
       }
 
-      console.log('Supabase Auth SignUp Success Data:', data);
-
       if (!data.user) {
-        console.error('Supabase Auth SignUp: No user data returned despite no error.');
-        throw new Error('Falha no cadastro: Nenhum usuário retornado.');
+        // This case happens if email confirmation is enabled and user is not immediately signed in.
+        // The handle_new_user trigger will not fire until the user confirms their email.
+        showSuccess('Cadastro realizado! Verifique seu e-mail para confirmar sua conta e faça login.');
+        form.reset();
+        navigate('/login');
+        return; // Exit early as user needs to confirm email
       }
 
+      // If user is immediately signed in (email confirmation disabled or already confirmed)
       // 2. Criar empresa
-      console.log('Creating company for user:', data.user.id);
       const { data: empresaData, error: empError } = await supabase
         .from('empresas')
         .insert({
@@ -118,13 +118,10 @@ export default function Signup() {
         .single();
 
       if (empError) {
-        console.error('Supabase Company Insert Error:', empError);
         throw empError;
       }
-      console.log('Company created:', empresaData);
 
       // 3. Associar user à empresa (clientes_empresas)
-      console.log('Linking user to company:', data.user.id, empresaData.id);
       const { error: linkError } = await supabase
         .from('clientes_empresas')
         .insert({
@@ -133,16 +130,13 @@ export default function Signup() {
         });
 
       if (linkError) {
-        console.error('Supabase Link User to Company Error:', linkError);
         throw linkError;
       }
-      console.log('User linked to company successfully.');
 
-      showSuccess('Conta criada com sucesso! Verifique seu e-mail para confirmar e faça login.');
+      showSuccess('Conta criada com sucesso! Você já pode fazer login.');
       form.reset();
       navigate('/login');
     } catch (error: any) {
-      console.error('Catch block error:', error);
       showError(error.message || 'Erro no cadastro');
     }
   };
@@ -218,12 +212,12 @@ export default function Signup() {
                         <Input
                           placeholder="(11) 99999-9999"
                           {...field}
-                          value={formatPhoneNumber(field.value)} // Aplica a máscara para exibição
+                          value={formatPhoneNumber(field.value)}
                           onChange={(e) => {
                             const formatted = formatPhoneNumber(e.target.value);
-                            field.onChange(formatted); // Salva o valor mascarado no estado do formulário
+                            field.onChange(formatted);
                           }}
-                          maxLength={15} // (XX) XXXXX-XXXX
+                          maxLength={15}
                         />
                       </FormControl>
                       <FormMessage />

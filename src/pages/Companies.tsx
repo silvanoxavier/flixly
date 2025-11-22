@@ -1,6 +1,6 @@
 "use client";
 
-import { useOutletContext, useNavigate } from "react-router-dom";
+import { useAuth } from '@/providers/AuthProvider';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { QrCode, Building2, CheckCircle, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import CreateInstanceModal from "../modules/channels/evolution/CreateInstanceModal";
+import { useNavigate, useOutletContext } from "react-router-dom"; // Adicionado useNavigate e useOutletContext
 
 interface ContextType {
   company: { id: string; nome_fantasia: string } | null;
@@ -26,9 +27,9 @@ interface Empresa {
 export default function Companies() {
   const navigate = useNavigate();
   const { company: selectedCompany } = useOutletContext<ContextType>();
-  const { session } = useAuth(); // Assumindo useAuth disponível ou via context
+  const { session } = useAuth();
 
-  const { data: empresas, isLoading, refetch } = useQuery<Empresa[]>({
+  const { data: empresas, isLoading } = useQuery<Empresa[]>({ // Removido 'refetch'
     queryKey: ['empresas-user'],
     queryFn: async () => {
       if (!session?.user.id) return [];
@@ -37,7 +38,6 @@ export default function Companies() {
       });
       if (error) throw error;
       
-      // Fetch WhatsApp status para cada empresa
       const empresasWithStatus = await Promise.all(
         (data || []).map(async (raw: any) => {
           const empresa = { ...raw, id: raw.empresa_id };
@@ -115,7 +115,7 @@ export default function Companies() {
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          onClick={() => handleCompanySelect(empresa.id)} // Muda empresa selecionada
+                          onClick={() => navigate(`/channels?companyId=${empresa.id}`)} // Redireciona para canais com ID da empresa
                         >
                           <QrCode className="h-4 w-4 mr-1" /> Gerenciar
                         </Button>

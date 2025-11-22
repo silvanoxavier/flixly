@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Menu, Search, Sun, Moon, Monitor, ChevronDown } from "lucide-react";
+import { Menu, Search, Sun, Moon, Monitor } from "lucide-react";
 import { useTheme } from "../providers/ThemeProvider";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -57,7 +57,6 @@ export default function MainLayout() {
           client_user_id: session.user.id
         });
         if (error) throw error;
-        // Ensure 'id' is used for company context
         const formattedData = (data || []).map((c: RawCompanyData) => ({ ...c, id: c.empresa_id }));
         setCompanies(formattedData);
         if (formattedData.length > 0) setSelectedCompany(formattedData[0]);

@@ -119,9 +119,6 @@ export default function Signup() {
 
       if (linkError) throw linkError;
 
-      // 4. Update profile com phone (se não veio via metadata)
-      await supabase.from('profiles').update({ phone: values.whatsapp }).eq('id', data.user.id);
-
       showSuccess('Conta criada com sucesso! Verifique seu e-mail para confirmar.');
       navigate('/login');
     } catch (error: any) {

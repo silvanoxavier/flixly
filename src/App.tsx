@@ -16,15 +16,19 @@ import Automations from "@/pages/Automations";
 import Reports from "@/pages/Reports";
 import Settings from "@/pages/Settings";
 import Agendamento from "@/pages/Agendamento";
-import Admin from "@/pages/Admin"; // Importar a nova página Admin
+import Admin from "@/pages/Admin";
+import Login from "@/pages/Login";
+import Signup from "@/pages/Signup";
 import NotFound from "@/pages/NotFound";
-import AuthPage from "@/pages/AuthPage";
 
 const router = createBrowserRouter([
   {
-    path: "/auth",
-    element: <AuthPage />,
-    errorElement: <NotFound />,
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/signup",
+    element: <Signup />,
   },
   {
     path: "/",
@@ -45,7 +49,7 @@ const router = createBrowserRouter([
       { path: "reports", element: <Reports /> },
       { path: "settings", element: <Settings /> },
       { path: "agendamento", element: <Agendamento /> },
-      { path: "admin", element: <Admin /> }, // Adicionar a rota para Admin
+      { path: "admin", element: <Admin /> },
     ],
   },
   {

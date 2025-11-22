@@ -1,6 +1,7 @@
 "use client";
 
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { supabase } from '@/lib/supabase';
 import { 
   Home,
   LayoutDashboard, 
@@ -18,7 +19,7 @@ import {
   ChevronDown,
   LogOut,
   Calendar,
-  Lock // Importar o ícone Lock
+  Lock 
 } from "lucide-react";
 import { useState } from "react";
 
@@ -50,7 +51,7 @@ const navItems: NavItem[] = [
   { href: "/reports", label: "Relatórios", icon: FileBarChart },
   { href: "/agendamento", label: "Agendamento", icon: Calendar },
   { href: "/settings", label: "Configurações", icon: Settings },
-  { href: "/admin", label: "Administração", icon: Lock }, // Adicionar o link para Admin
+  { href: "/admin", label: "Administração", icon: Lock },
 ];
 
 interface SidebarNavProps {
@@ -59,13 +60,19 @@ interface SidebarNavProps {
 }
 
 export default function SidebarNav({ expanded, onNavClick }: SidebarNavProps) {
+  const navigate = useNavigate();
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/login');
+  };
 
   const handleParentClick = (label: string) => {
     if (!expanded) {
       setOpenSubmenu(openSubmenu === label ? null : label);
     } else {
-      setOpenSubmenu(null); // Close submenu if sidebar is fully expanded
+      setOpenSubmenu(null);
     }
   };
 
@@ -73,7 +80,7 @@ export default function SidebarNav({ expanded, onNavClick }: SidebarNavProps) {
     <nav className="flex flex-col h-full p-3 space-y-1.5 pt-1">
       {navItems.map((item) => (
         <div key={item.label}>
-          {item.href ? (
+          {item.href && item.label !== 'Sair' ? (
             <NavLink
               to={item.href}
               onClick={onNavClick}
@@ -82,22 +89,22 @@ export default function SidebarNav({ expanded, onNavClick }: SidebarNavProps) {
                   isActive
                     ? "bg-primary/90 text-primary-foreground shadow-md border border-primary/50"
                     : "text-muted-foreground hover:bg-accent/50 hover:text-foreground hover:shadow-sm"
-                } ${expanded ? 'pl-3 space-x-2.5 justify-start' : 'justify-center px-2.5' } ${item.label === 'Sair' ? 'mt-auto border-t border-border/50 pt-4 mt-8' : ''}`
+                } ${expanded ? 'pl-3 space-x-2.5 justify-start' : 'justify-center px-2.5' }`
               }
             >
-              <item.icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${expanded ? 'scale-105' : 'group-hover:scale-105'} ${item.label === 'Sair' ? 'text-destructive' : ''}`} />
+              <item.icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${expanded ? 'scale-105' : 'group-hover:scale-105'}`} />
               <span 
                 className={`font-medium whitespace-nowrap transition-all duration-300 origin-left text-sm ${
                   expanded 
                     ? 'opacity-100 scale-100 translate-x-0 w-auto ml-2.5' 
                     : 'opacity-0 scale-75 -translate-x-2 w-0 ml-0 invisible'
-                } ${item.label === 'Sair' ? 'text-destructive' : ''}`}
+                }`}
               >
                 {item.label}
               </span>
             </NavLink>
-          ) : (
-            // Parent item with children
+          ) : item.href === undefined ? (
+            // Parent submenu
             <div 
               className={`group flex items-center rounded-lg transition-all duration-200 overflow-hidden h-11 cursor-pointer ${
                 openSubmenu === item.label && !expanded
@@ -120,9 +127,9 @@ export default function SidebarNav({ expanded, onNavClick }: SidebarNavProps) {
                 <ChevronDown className={`ml-auto h-4 w-4 transition-transform duration-200 ${openSubmenu === item.label ? 'rotate-180' : ''}`} />
               )}
             </div>
-          )}
+          ) : null}
 
-          {/* Render children if parent is active or sidebar is expanded */}
+          {/* Children */}
           {item.children && (expanded || openSubmenu === item.label) && (
             <div className={`pl-6 ${expanded ? 'block' : 'absolute left-full top-0 bg-card shadow-lg rounded-md py-2 w-48 z-50'}`}>
               {item.children.map((child) => (
@@ -131,53 +138,35 @@ export default function SidebarNav({ expanded, onNavClick }: SidebarNavProps) {
                   to={child.href!}
                   onClick={onNavClick}
                   className={({ isActive }) =>
-                    `flex items-center rounded-lg transition-colors duration-200 h-9 ${
+                    `flex items-center rounded-lg transition-colors duration-200 h-9 p-2 ${
                       isActive
                         ? "bg-primary/90 text-primary-foreground"
                         : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-                    } ${expanded ? 'pl-3 space-x-2.5 justify-start' : 'justify-center px-2.5' }`
+                    }`
                   }
                 >
-                  <child.icon className="h-4 w-4 flex-shrink-0" />
-                  <span 
-                    className={`font-medium whitespace-nowrap text-sm ${
-                      expanded 
-                        ? 'opacity-100 scale-100 translate-x-0 w-auto ml-2.5' 
-                        : 'opacity-0 scale-75 -translate-x-2 w-0 ml-0 invisible'
-                    }`}
-                  >
-                    {child.label}
-                  </span>
+                  <child.icon className="h-4 w-4 flex-shrink-0 mr-2" />
+                  <span className="font-medium text-sm">{child.label}</span>
                 </NavLink>
               ))}
             </div>
           )}
         </div>
       ))}
-      {/* Fixed logout at bottom */}
-      <div className="border-t border-border/50 pt-4 shrink-0">
-        <NavLink
-          to="/auth"
-          onClick={onNavClick}
-          className={({ isActive }) =>
-            `group flex items-center rounded-lg transition-all duration-200 overflow-hidden h-11 ${
-              isActive
-                ? "bg-destructive/90 text-destructive-foreground shadow-md border border-destructive/50"
-                : "text-destructive hover:bg-destructive/10 hover:text-destructive hover:shadow-sm"
-            } ${expanded ? 'pl-3 space-x-2.5 justify-start' : 'justify-center px-2.5' }`
-          }
+
+      {/* Logout button */}
+      <div className="border-t border-border/50 pt-4 mt-auto shrink-0">
+        <button
+          onClick={handleLogout}
+          className="group flex items-center w-full rounded-lg transition-all duration-200 overflow-hidden h-11 text-destructive hover:bg-destructive/10 hover:text-destructive hover:shadow-sm justify-center px-2.5"
         >
-          <LogOut className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
-          <span 
-            className={`font-medium whitespace-nowrap transition-all duration-300 origin-left text-sm ${
-              expanded 
-                ? 'opacity-100 scale-100 translate-x-0 w-auto ml-2.5' 
-                : 'opacity-0 scale-75 -translate-x-2 w-0 ml-0 invisible'
-            }`}
-          >
+          <LogOut className="h-5 w-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-105" />
+          <span className={`font-medium whitespace-nowrap transition-all duration-300 origin-left text-sm ml-2.5 ${
+            expanded ? 'opacity-100 scale-100 translate-x-0 w-auto' : 'opacity-0 scale-75 -translate-x-2 w-0 ml-0 invisible'
+          }`}>
             Sair
           </span>
-        </NavLink>
+        </button>
       </div>
     </nav>
   );

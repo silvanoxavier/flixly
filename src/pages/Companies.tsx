@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { QrCode, Building2, CheckCircle, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import CreateInstanceModal from "../modules/channels/evolution/CreateInstanceModal";
-import { useNavigate, useOutletContext } from "react-router-dom"; // Adicionado useNavigate e useOutletContext
+import { useNavigate, useOutletContext } from "react-router-dom";
 
 interface ContextType {
   company: { id: string; nome_fantasia: string } | null;
@@ -29,7 +29,7 @@ export default function Companies() {
   const { company: selectedCompany } = useOutletContext<ContextType>();
   const { session } = useAuth();
 
-  const { data: empresas, isLoading } = useQuery<Empresa[]>({ // Removido 'refetch'
+  const { data: empresas, isLoading } = useQuery<Empresa[]>({ // 'refetch' removido
     queryKey: ['empresas-user'],
     queryFn: async () => {
       if (!session?.user.id) return [];

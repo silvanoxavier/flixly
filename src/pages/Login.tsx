@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom'; // Importar useSearchParams
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +25,7 @@ type FormData = z.infer<typeof formSchema>;
 export default function Login() {
   const navigate = useNavigate();
   const { session } = useAuth();
+  const [searchParams] = useSearchParams(); // Hook para ler parâmetros da URL
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { email: '', password: '' },
@@ -37,20 +38,45 @@ export default function Login() {
     }
   }, [session, navigate]);
 
+  // Novo useEffect para lidar com a confirmação de e-mail
+  useEffect(() => {
+    const type = searchParams.get('type');
+    const accessToken = searchParams.get('access_token');
+    const refreshToken = searchParams.get('refresh_token');
+
+    if (type === 'signup' && accessToken && refreshToken) {
+      console.log('Parâmetros de confirmação de e-mail detectados. Tentando finalizar sessão...');
+      // Supabase automaticamente lida com a sessão quando os tokens estão na URL
+      // Mas podemos forçar a atualização da sessão para garantir
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      }).then(({ error }) => {
+        if (error) {
+          console.error('Erro ao definir sessão após confirmação:', error.message);
+          showError('Erro ao confirmar e-mail. Tente fazer login.');
+        } else {
+          showSuccess('E-mail confirmado com sucesso! Redirecionando para o dashboard.');
+          navigate('/dashboard', { replace: true });
+        }
+      });
+    }
+  }, [searchParams, navigate]);
+
+
   const onSubmit = async (data: FormData) => {
-    console.log('Form submit chamado com:', data.email); // DEBUG: remove depois
+    console.log('Form submit chamado com:', data.email);
     const { error } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
     });
 
-    console.log('Supabase response:', { error }); // DEBUG: remove depois
+    console.log('Supabase response:', { error });
 
     if (error) {
       console.error('Erro de login:', error.message, error.status);
       let errorMessage = 'Erro no login. Verifique suas credenciais.';
       
-      // Tratamento específico de erros Supabase
       if (error.status === 400) errorMessage = 'E-mail ou senha inválidos.';
       else if (error.status === 429) errorMessage = 'Muitas tentativas. Tente novamente em 1 minuto.';
       else if (error.message.includes('Email not confirmed')) errorMessage = 'Confirme seu e-mail antes de logar.';

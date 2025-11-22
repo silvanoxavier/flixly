@@ -108,7 +108,11 @@ export default function MainLayout() {
   const headerPaddingTop = 'pt-16 md:pt-20';
 
   if (loading || companiesLoading) {
-    return <div className="flex items-center justify-center h-screen"><Skeleton className="h-12 w-48" /></div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Skeleton className="h-12 w-48" />
+      </div>
+    );
   }
 
   return (

@@ -34,15 +34,14 @@ export default function AuthPage() {
             variables: {
               default: {
                 colors: {
-                  primary: 'var(--primary)',
-                  primary2: 'var(--primary)',
-                  defaultButtonBackground: 'var(--secondary)',
-                  defaultButtonText: 'var(--foreground)',
-                  divider: 'var(--border)',
+                  brand: 'hsl(var(--primary))',
+                  brandAccent: 'hsl(var(--primary/20))',
+                  defaultButtonBackground: 'hsl(var(--secondary))',
+                  defaultButtonText: 'hsl(var(--foreground))',
                 },
                 radii: {
-                  button: 'var(--radius)',
-                  input: 'var(--radius)',
+                  buttonBorderRadius: 'var(--radius)',
+                  inputBorderRadius: 'var(--radius)',
                 },
               },
             },

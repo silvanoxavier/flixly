@@ -1,51 +1,134 @@
 "use client";
 
+import { useOutletContext, useNavigate } from "react-router-dom";
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { QrCode } from "lucide-react";
+import { QrCode, Building2, CheckCircle, AlertCircle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import CreateInstanceModal from "../modules/channels/evolution/CreateInstanceModal";
 
-const companiesData = [
-  { id: 1, name: "Empresa A", cnpj: "12.345.678/0001-90", status: "Conectada", instance: "inst1" },
-];
+interface ContextType {
+  company: { id: string; nome_fantasia: string } | null;
+}
 
-const Companies = () => (
-  <Card>
-    <CardHeader>
-      <CardTitle>Empresas</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nome</TableHead>
-            <TableHead>CNPJ</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Instância</TableHead>
-            <TableHead>Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {companiesData.map((c) => (
-            <TableRow key={c.id}>
-              <TableCell>{c.name}</TableCell>
-              <TableCell>{c.cnpj}</TableCell>
-              <TableCell>
-                <Badge variant={c.status === "Conectada" ? "default" : "secondary"}>{c.status}</Badge>
-              </TableCell>
-              <TableCell>{c.instance}</TableCell>
-              <TableCell>
-                <Button variant="outline" size="sm">
-                  <QrCode className="mr-1 h-4 w-4" /> QR Code
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </CardContent>
-  </Card>
-);
+interface Empresa {
+  id: string;
+  nome_fantasia: string;
+  cnpj: string;
+  plano_id: string;
+  whatsapp_sessions?: { status: string }[];
+}
 
-export default Companies;
+export default function Companies() {
+  const navigate = useNavigate();
+  const { company: selectedCompany } = useOutletContext<ContextType>();
+  const { session } = useAuth(); // Assumindo useAuth disponível ou via context
+
+  const { data: empresas, isLoading, refetch } = useQuery<Empresa[]>({
+    queryKey: ['empresas-user'],
+    queryFn: async () => {
+      if (!session?.user.id) return [];
+      const { data, error } = await supabase.rpc('get_client_companies', {
+        client_user_id: session.user.id
+      });
+      if (error) throw error;
+      
+      // Fetch WhatsApp status para cada empresa
+      const empresasWithStatus = await Promise.all(
+        (data || []).map(async (raw: any) => {
+          const empresa = { ...raw, id: raw.empresa_id };
+          const { data: sessions } = await supabase
+            .from('whatsapp_sessions')
+            .select('status')
+            .eq('company_id', empresa.id)
+            .single();
+          return { ...empresa, whatsapp_sessions: sessions ? [sessions] : [] };
+        })
+      );
+      return empresasWithStatus;
+    },
+    enabled: !!session?.user.id,
+  });
+
+  const getWhatsappStatus = (empresa: Empresa) => {
+    const session = empresa.whatsapp_sessions?.[0];
+    if (!session) return { variant: 'secondary' as const, text: 'Sem sessão', icon: AlertCircle };
+    if (session.status === 'connected') return { variant: 'default' as const, text: 'Conectada', icon: CheckCircle };
+    return { variant: 'destructive' as const, text: session.status || 'Desconectada', icon: AlertCircle };
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="grid grid-cols-1 gap-4">
+          {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+            <Building2 className="h-7 w-7 text-primary" />
+            Minhas Empresas
+          </h1>
+          <p className="text-muted-foreground">Gerencie suas empresas e instâncias WhatsApp.</p>
+        </div>
+      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Empresas Associadas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome Fantasia</TableHead>
+                <TableHead>CNPJ</TableHead>
+                <TableHead>Status WhatsApp</TableHead>
+                <TableHead>Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {empresas?.map((empresa) => {
+                const waStatus = getWhatsappStatus(empresa);
+                return (
+                  <TableRow key={empresa.id} className={selectedCompany?.id === empresa.id ? 'bg-accent/50' : ''}>
+                    <TableCell className="font-medium">{empresa.nome_fantasia}</TableCell>
+                    <TableCell>{empresa.cnpj}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <waStatus.icon className="h-4 w-4" />
+                        <Badge variant={waStatus.variant}>{waStatus.text}</Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleCompanySelect(empresa.id)} // Muda empresa selecionada
+                        >
+                          <QrCode className="h-4 w-4 mr-1" /> Gerenciar
+                        </Button>
+                        <CreateInstanceModal />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              }) || <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Nenhuma empresa encontrada. Crie uma conta!</TableCell></TableRow>}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Menu, Search, Sun, Moon, Monitor } from "lucide-react";
+import { Menu, Search, Sun, Moon, Monitor, ChevronDown } from "lucide-react";
 import { useTheme } from "../providers/ThemeProvider";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import SidebarNav from "@/components/SidebarNav";
 import { useAuth } from "../providers/AuthProvider";
 import { supabase } from '@/lib/supabase';
@@ -36,6 +37,7 @@ export default function MainLayout() {
   const [globalSearch, setGlobalSearch] = useState("");
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [companiesLoading, setCompaniesLoading] = useState(true);
   const { setTheme } = useTheme();
 
@@ -56,8 +58,9 @@ export default function MainLayout() {
         });
         if (error) throw error;
         // Ensure 'id' is used for company context
-        const formattedData = data.map((c: RawCompanyData) => ({ ...c, id: c.empresa_id }));
-        if (formattedData && formattedData.length > 0) setSelectedCompany(formattedData[0]);
+        const formattedData = (data || []).map((c: RawCompanyData) => ({ ...c, id: c.empresa_id }));
+        setCompanies(formattedData);
+        if (formattedData.length > 0) setSelectedCompany(formattedData[0]);
       } catch (error) {
         console.error('Erro companies:', error);
       } finally {
@@ -67,6 +70,11 @@ export default function MainLayout() {
 
     fetchCompanies();
   }, [session]);
+
+  const handleCompanySelect = (id: string) => {
+    const company = companies.find(c => c.id === id);
+    if (company) setSelectedCompany(company);
+  };
 
   const handleMouseEnter = () => setSidebarExpanded(true);
   const handleMouseLeave = () => setTimeout(() => setSidebarExpanded(false), 150);
@@ -128,6 +136,21 @@ export default function MainLayout() {
           </div>
         </div>
         <div className="flex items-center space-x-4 min-w-0 flex-1 max-w-md justify-end">
+          {/* Selector de Empresa */}
+          {companies.length > 0 && (
+            <Select value={selectedCompany?.id || ''} onValueChange={handleCompanySelect}>
+              <SelectTrigger className="w-[200px] h-12">
+                <SelectValue placeholder="Selecione empresa" />
+              </SelectTrigger>
+              <SelectContent>
+                {companies.map((company) => (
+                  <SelectItem key={company.id} value={company.id}>
+                    {company.nome_fantasia} ({company.cnpj})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <UserInfo company={selectedCompany} />
           <NotificationsMenu />
           <ChatNotificationBell />

@@ -1,49 +1,79 @@
 "use client";
 
-import { useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Menu, Search, Sun, Moon, Monitor } from "lucide-react";
+import { Menu, Search, Sun, Moon, Monitor, Building2 } from "lucide-react";
 import { useTheme } from "../providers/ThemeProvider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import SidebarNav from "~/components/SidebarNav";
+import { useAuth } from "../providers/AuthProvider";
+import { supabase } from '@/lib/supabase';
+import { Skeleton } from "@/components/ui/skeleton";
 
-const companies = [
-  { id: "1", name: "Empresa A", instance: "inst1" },
-  { id: "2", name: "Empresa B", instance: "inst2" },
-];
-
-const pageTitles: Record<string, string> = {
-  "/": "Início",
-  "/dashboard": "Dashboard",
-  "/companies": "Empresas",
-  "/channels": "Canais",
-  "/customers": "Clientes",
-  "/chat": "Chat",
-  "/whatsapp": "WhatsApp",
-  "/catalog": "Catálogo",
-  "/kanban": "Kanban",
-  "/analytics": "Análises",
-  "/automations": "Automações",
-  "/reports": "Relatórios",
-  "/settings": "Configurações",
-};
+interface Company {
+  empresa_id: string;
+  nome_fantasia: string;
+  cnpj: string;
+}
 
 export default function MainLayout() {
+  const { session, loading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [companiesLoading, setCompaniesLoading] = useState(true);
   const { setTheme } = useTheme();
-  const [selectedCompany, setSelectedCompany] = useState(companies[0]);
-  const location = useLocation();
-  const currentTitle = pageTitles[location.pathname as keyof typeof pageTitles] || "Flixly";
+
+  // Protect: redirect to auth if no session
+  useEffect(() => {
+    if (!loading && !session) {
+      navigate('/auth', { replace: true });
+    }
+  }, [loading, session, navigate]);
+
+  // Fetch real companies via RPC get_client_companies
+  useEffect(() => {
+    if (!session?.user.id) return;
+
+    const fetchCompanies = async () => {
+      setCompaniesLoading(true);
+      try {
+        const { data, error } = await supabase.rpc('get_client_companies', {
+          client_user_id: session.user.id
+        });
+        if (error) throw error;
+        setCompanies(data || []);
+        if (data.length > 0) setSelectedCompany(data[0]);
+      } catch (error) {
+        console.error('Erro companies:', error);
+      } finally {
+        setCompaniesLoading(false);
+      }
+    };
+
+    fetchCompanies();
+  }, [session]);
 
   const handleMouseEnter = () => setSidebarExpanded(true);
   const handleMouseLeave = () => setTimeout(() => setSidebarExpanded(false), 150);
   const handleNavClick = () => setSidebarExpanded(false);
+
+  const pageTitles: Record<string, string> = {
+    "/": "Início",
+    "/dashboard": "Dashboard",
+    "/companies": "Empresas",
+    // ... outros
+  };
+
+  const currentTitle = pageTitles[location.pathname as keyof typeof pageTitles] || "Flixly";
 
   const baseSidebarClasses = "hidden md:block md:fixed md:left-0 md:top-20 md:h-[calc(100vh-5rem)] md:border-r md:bg-card/95 md:overflow-y-auto md:transition-all md:duration-400 md:ease-out";
   const expandedSidebarClasses = sidebarExpanded 
@@ -51,8 +81,11 @@ export default function MainLayout() {
     : "md:w-16 md:z-40 md:shadow-sm";
   
   const sidebarClasses = `${baseSidebarClasses} ${expandedSidebarClasses}`;
-
   const headerPaddingTop = 'pt-16 md:pt-20';
+
+  if (loading || companiesLoading) {
+    return <div className="flex items-center justify-center h-screen"><Skeleton className="h-12 w-48" /></div>;
+  }
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -79,17 +112,27 @@ export default function MainLayout() {
           </div>
         </div>
         <div className="flex items-center space-x-2 min-w-0 flex-1 max-w-md justify-end">
-          <Select value={selectedCompany.id} onValueChange={(id) => setSelectedCompany(companies.find(c => c.id === id)!)}>
+          <Select value={selectedCompany?.empresa_id || ''} onValueChange={(id) => {
+            const company = companies.find(c => c.empresa_id === id);
+            setSelectedCompany(company || null);
+          }}>
             <SelectTrigger className="w-44 md:w-48 h-12">
-              <SelectValue />
+              <SelectValue placeholder="Selecione empresa" />
             </SelectTrigger>
             <SelectContent>
-              {companies.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+              {companies.map(c => (
+                <SelectItem key={c.empresa_id} value={c.empresa_id}>
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4" />
+                    {c.nome_fantasia} <span className="text-xs text-muted-foreground ml-2">({c.cnpj})</span>
+                  </div>
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="default" size="icon" className="h-12 w-12">
+              <Button variant="ghost" size="icon" className="h-12 w-12">
                 <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                 <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
                 <span className="sr-only">Toggle theme</span>
@@ -104,7 +147,7 @@ export default function MainLayout() {
         </div>
       </header>
 
-      {/* Sidebar FIXED narrow/expanded overlay */}
+      {/* Sidebar */}
       <aside 
         className={sidebarClasses} 
         onMouseEnter={handleMouseEnter} 
@@ -120,7 +163,7 @@ export default function MainLayout() {
         </SheetContent>
       </Sheet>
 
-      {/* Main FIXED ml-16 (ocupa após narrow, overlay não afeta) */}
+      {/* Main content */}
       <div className={`flex-1 flex flex-col overflow-hidden ${headerPaddingTop} md:ml-16 min-w-0 transition-none`}>
         <main className="flex-1 overflow-auto p-4 md:p-6">
           <Outlet context={{ company: selectedCompany }} />

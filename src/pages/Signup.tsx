@@ -16,10 +16,15 @@ import { showError, showSuccess } from '@/utils/toast';
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
+import { formatCnpj, isValidCnpj } from '@/utils/cnpj'; // Importar funções de CNPJ
 
 const formSchema = z.object({
   nome_empresa: z.string().min(3, 'Nome da empresa deve ter pelo menos 3 caracteres'),
-  cnpj: z.string().regex(/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/, 'Formato CNPJ inválido (ex: 12.345.678/0001-90)'),
+  cnpj: z.string()
+    .refine(value => {
+      const cleanedCnpj = value.replace(/[^\d]+/g, '');
+      return isValidCnpj(cleanedCnpj);
+    }, 'CNPJ inválido'),
   nome_responsavel: z.string().min(2, 'Nome responsável inválido'),
   whatsapp: z.string().regex(/^\d{10,11}$/, 'WhatsApp inválido (ex: 11999999999)'),
   email: z.string().email('E-mail inválido'),
@@ -95,7 +100,7 @@ export default function Signup() {
         .from('empresas')
         .insert({
           nome_fantasia: values.nome_empresa,
-          cnpj: values.cnpj,
+          cnpj: values.cnpj.replace(/[^\d]+/g, ''), // Salvar CNPJ limpo no banco
           razao_social: values.nome_empresa,
           plano_id: values.plano_id,
         })
@@ -159,7 +164,15 @@ export default function Signup() {
                   <FormItem>
                     <FormLabel>CNPJ</FormLabel>
                     <FormControl>
-                      <Input placeholder="12.345.678/0001-90" {...field} />
+                      <Input
+                        placeholder="12.345.678/0001-90"
+                        {...field}
+                        onChange={(e) => {
+                          const formattedCnpj = formatCnpj(e.target.value);
+                          field.onChange(formattedCnpj);
+                        }}
+                        maxLength={18} // Limita o tamanho máximo do campo com a máscara
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

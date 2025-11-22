@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Loader2 } from 'lucide-react';
 import { showError, showSuccess } from '@/utils/toast';
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
@@ -30,17 +31,36 @@ export default function Login() {
   });
 
   useEffect(() => {
-    if (session) navigate('/');
+    if (session) {
+      console.log('Sessão detectada, redirecionando para dashboard...', session.user.email);
+      navigate('/dashboard', { replace: true });
+    }
   }, [session, navigate]);
 
   const onSubmit = async (data: FormData) => {
-    const { error } = await supabase.auth.signInWithPassword(data);
+    console.log('Form submit chamado com:', data.email); // DEBUG: remove depois
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    });
+
+    console.log('Supabase response:', { error }); // DEBUG: remove depois
+
     if (error) {
-      showError(error.message);
-    } else {
-      showSuccess('Login realizado!');
-      navigate('/');
+      console.error('Erro de login:', error.message, error.status);
+      let errorMessage = 'Erro no login. Verifique suas credenciais.';
+      
+      // Tratamento específico de erros Supabase
+      if (error.status === 400) errorMessage = 'E-mail ou senha inválidos.';
+      else if (error.status === 429) errorMessage = 'Muitas tentativas. Tente novamente em 1 minuto.';
+      else if (error.message.includes('Email not confirmed')) errorMessage = 'Confirme seu e-mail antes de logar.';
+      
+      showError(errorMessage);
+      return;
     }
+
+    showSuccess('Login realizado com sucesso! Redirecionando...');
+    navigate('/dashboard', { replace: true });
   };
 
   return (
@@ -84,7 +104,16 @@ export default function Login() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">Entrar</Button>
+              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Entrando...
+                  </>
+                ) : (
+                  'Entrar'
+                )}
+              </Button>
             </form>
           </Form>
         </CardContent>

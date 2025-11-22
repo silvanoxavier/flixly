@@ -2,21 +2,19 @@
 
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { useRouter } from 'react-router-dom';
+import { supabase } from '@/lib/supabase';
+import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 
-const supabase = createClientComponentClient();
-
 export default function AuthPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Redirect se já logado
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) router.replace('/');
+      if (session) navigate('/');
     });
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-muted p-4">
@@ -30,7 +28,7 @@ export default function AuthPage() {
         </div>
         <Auth
           supabaseClient={supabase}
-          providers={['google', 'github']}
+          providers={[]}
           appearance={{
             theme: ThemeSupa,
             variables: {
@@ -50,7 +48,6 @@ export default function AuthPage() {
             },
           }}
           theme="default"
-          redirectTo="/"
         />
       </div>
     </div>

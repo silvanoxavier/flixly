@@ -1,9 +1,9 @@
 "use client";
 
-import { createContext, useContext, useEffect, ReactNode } from 'react';
-import { Session, createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { useRouter, usePathname } from 'react-router-dom';
-import { Database } from '@/types/supabase'; // Gerado pelo Supabase
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { Session } from '@supabase/supabase-js';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { supabase } from '@/lib/supabase';
 
 type AuthContextType = {
   session: Session | null;
@@ -12,10 +12,9 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const supabase = createClientComponentClient<Database>();
-  const router = useRouter();
-  const pathname = usePathname();
   const [session, setSession] = useState<Session | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -33,13 +32,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (session) {
-      // Authenticated → main app
-      if (pathname === '/auth') router.replace('/');
+      // Authenticated → main app (exceto /auth)
+      if (location.pathname === '/auth') navigate('/', { replace: true });
     } else {
-      // Unauthenticated → auth page
-      if (pathname !== '/auth' && pathname !== '/') router.replace('/auth');
+      // Unauthenticated → auth page (exceto home)
+      if (location.pathname !== '/auth' && location.pathname !== '/') {
+        navigate('/auth', { replace: true });
+      }
     }
-  }, [session, pathname, router]);
+  }, [session, location.pathname, navigate]);
 
   return (
     <AuthContext.Provider value={{ session }}>

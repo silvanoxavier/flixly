@@ -19,7 +19,7 @@ import Agendamento from "@/pages/Agendamento";
 import Admin from "@/pages/Admin";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
-import NotFound from "@/pages/NotFound";
+import NotFound from "@/pages/NotFound"; // Certifique-se de que este componente existe e está correto
 
 const router = createBrowserRouter([
   {
@@ -33,9 +33,9 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <MainLayout />,
-    errorElement: <NotFound />,
+    errorElement: <NotFound />, // Garante que o NotFound seja exibido para erros de layout
     children: [
-      { index: true, element: <Index /> },
+      { index: true, element: <Index /> }, // Rota padrão para '/'
       { path: "dashboard", element: <Dashboard /> },
       { path: "companies", element: <Companies /> },
       { path: "channels", element: <Channels /> },
@@ -53,7 +53,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: "*",
+    path: "*", // Catch-all para rotas não encontradas
     element: <NotFound />,
   },
 ]);

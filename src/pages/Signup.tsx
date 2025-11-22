@@ -136,7 +136,7 @@ export default function Signup() {
             <span className="font-black text-xl text-primary-foreground">F</span>
           </div>
           <CardTitle className="text-2xl text-center">Criar conta</CardTitle>
-          <CardDescription className="text-center">Crie sua conta Flixly (1º user=Super Admin)</CardDescription>
+          <CardDescription className="text-center">Crie sua conta Flixly</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>

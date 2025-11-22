@@ -120,7 +120,8 @@ export default function Signup() {
 
       if (linkError) throw linkError;
 
-      showSuccess('Conta criada! Verifique e-mail para confirmar (primeiro user=super_admin).');
+      showSuccess('Conta criada com sucesso! Verifique seu e-mail para confirmar e faça login.');
+      form.reset(); // Resetar o formulário
       navigate('/login');
     } catch (error: any) {
       showError(error.message || 'Erro no cadastro');

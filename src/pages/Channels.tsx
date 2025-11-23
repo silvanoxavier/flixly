@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Facebook, Instagram, Youtube } from "lucide-react";
 import CreateInstanceModal from "../modules/channels/evolution/CreateInstanceModal";
-import ManageInstanceModal from "../modules/channels/evolution/ManageInstanceModal";
 
 export default function Channels() {
   return (
@@ -24,10 +23,7 @@ export default function Channels() {
             <Badge variant="outline">Evolution API</Badge>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="grid grid-cols-1 gap-2">
-              <CreateInstanceModal />
-              <ManageInstanceModal />
-            </div>
+            <CreateInstanceModal />
           </CardContent>
         </Card>
 

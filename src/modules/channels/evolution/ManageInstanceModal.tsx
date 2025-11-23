@@ -1,158 +1,265 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
+import { useOutletContext } from "react-router-dom<dyad-write path="tsconfig.json" description="Add path aliases to fix ~/ and @/ imports (TS2307 errors).">
+{
+  "compilerOptions<dyad-write path="tsconfig.json" description="Fix TS2307: Add path aliases ~/ → src/* and @/ → src/* matching vite.config.ts.">
+{
+  "compilerOptions": {
+    "target": "ES2020<dyad-problem-report summary="2 problems">
+<problem file="src/modules/channels/evolution/CreateInstanceModal.tsx" line="13" column="50" code="6133">'TableHeader' is declared but its value is never read.</problem>
+<problem file="src/modules/channels/evolution/CreateInstanceModal.tsx" line="113" column="12" code="2769">No overload matches this call.
+  Overload 1 of 2, '(values: { company_id: string; instance_name: string; status: string; channel: string; number: string | null; token: string; qrcode: string | null; updated_at: string; }[], options?: { onConflict?: string | undefined; ignoreDuplicates?: boolean | undefined; count?: &quot;exact&quot; | ... 2 more ... | undefined; } | undefined): PostgrestFilterBuilder&lt;...&gt;', gave the following error.
+    Type 'string[]' is not assignable to type 'string'.
+  Overload 2 of 2, '(values: { company_id: string; instance_name: string; status: string; channel: string; number: string | null; token: string; qrcode: string | null; updated_at: string; }[], options?: { onConflict?: string | undefined; ignoreDuplicates?: boolean | undefined; count?: &quot;exact&quot; | ... 2 more ... | undefined; defaultToNull?: boolean | undefined; } | undefined): PostgrestFilterBuilder&lt;...&gt;', gave the following error.
+    Type 'string[]' is not assignable to type 'string'.</problem>
+</dyad-problem-report><think>[REDACTED]</think><dyad-write path="src/modules/channels/evolution/CreateInstanceModal.tsx" description="Fix TS6133: Remove unused TableHeader import. Fix TS2769: Replace upsert with select+conditional insert/update to avoid onConflict array TS error.">
+"use client";
+
+import { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from "~/lib/supabase";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { evolutionApi } from "~/lib/evolution";
-import { useToast } from "@/components/ui/use-toast";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Plus, RefreshCw, QrCode } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { RefreshCw, QrCode, Smartphone } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
+import { evolutionApi } from "~/lib/evolution";
 
 interface ContextType {
-  company: { id: string; name: string; instance: string };
+  company: { id: string; nome_fantasia: string; instance: string };
 }
 
 interface Instance {
-  _id: string;
-  name: string;
+  id?: string;
+  instance_name: string;
   channel: string;
   status: string;
   number?: string;
-  token?: string;
-  createdAt: number;
+  qrcode?: string;
+  updated_at?: string;
 }
 
-const STORAGE_KEY = "flixly_instances";
-
-const ManageInstanceModal = () => {
+const CreateInstanceModal = () => {
   const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [channel, setChannel] = useState("baileys");
+  const [token, setToken] = useState("");
+  const [number, setNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [qrCode, setQrCode] = useState("");
   const [currentInstance, setCurrentInstance] = useState("");
-  const [instances, setInstances] = useState<Instance[]>([]);
+  const [activeTab, setActiveTab] = useState<"create" | "manage">("create");
 
   const { company } = useOutletContext<ContextType>();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Carrega do localStorage (sync com CreateInstanceModal)
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) setInstances(JSON.parse(saved));
-  }, []);
+  const { data: instances } = useQuery<Instance[]>({
+    queryKey: ['whatsapp_sessions', company.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('whatsapp_sessions')
+        .select('*')
+        .eq('company_id', company.id)
+        .order('updated_at', { ascending: false });
+      return data || [];
+    },
+    enabled: !!company.id && open,
+  });
 
-  const fetchStatus = useCallback(async (instanceName: string) => {
-    try {
-      const res = await evolutionApi.getConnectionState(instanceName);
-      // Fix TS2345: res.data.data.status é string (não res.data.status boolean)
-      const status = typeof res.data.data.status === "string" 
-        ? res.data.data.status 
-        : String(res.data.data.status || "connected");
-      setInstances(prev => prev.map(inst => 
-        inst.name === instanceName ? { ...inst, status } : inst
-      ));
-      return status;
-    } catch (error: any) {
-      console.error("Erro status:", error);
-      return "error";
+  const generateToken = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 18; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-  }, []);
+    return result;
+  };
+
+  useEffect(() => {
+    if (open && !token) {
+      setToken(generateToken());
+    }
+  }, [open, token]);
 
   const fetchQR = async (instanceName: string) => {
-    setLoading(true);
     try {
       const res = await evolutionApi.getQRCode(instanceName);
       setQrCode(res.data.data.qrCode || "");
       setCurrentInstance(instanceName);
-      toast({ title: "QR Code carregado!" });
+      await supabase
+        .from('whatsapp_sessions')
+        .update({ qrcode: res.data.data.qrCode || null })
+        .eq('instance_name', instanceName)
+        .eq('company_id', company.id);
+      queryClient.invalidateQueries({ queryKey: ['whatsapp_sessions', company.id] });
+      toast({ title: "QR Code atualizado!" });
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Erro QR", description: error.message });
+      toast({ variant: "destructive", title: "Erro QR", description: error.response?.data || error.message });
+    }
+  };
+
+  const handleCreate = async () => {
+    if (!name.trim() || !token.trim()) {
+      toast({ variant: "destructive", title: "Nome e Token obrigatórios!" });
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await evolutionApi.createInstance(name, channel, token, number || undefined);
+      const status = res.data.data.qrCode ? 'qrcode' : 'open';
+      const payload = {
+        company_id: company.id,
+        instance_name: name,
+        status,
+        channel,
+        number: number || null,
+        token, // Note: In production, avoid saving tokens or encrypt
+        qrcode: res.data.data.qrCode || null,
+        updated_at: new Date().toISOString(),
+      };
+
+      // Check if exists, then update or insert
+      const { data: existing } = await supabase
+        .from('whatsapp_sessions')
+        .select('id')
+        .eq('company_id', company.id)
+        .eq('instance_name', name)
+        .single();
+
+      let error;
+      if (existing) {
+        ({ error } = await supabase
+          .from('whatsapp_sessions')
+          .update(payload)
+          .eq('id', existing.id));
+      } else {
+        ({ error } = await supabase
+          .from('whatsapp_sessions')
+          .insert([payload]));
+      }
+
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['whatsapp_sessions', company.id] });
+      if (res.data.data.qrCode) {
+        setQrCode(res.data.data.qrCode);
+        setCurrentInstance(name);
+      }
+      toast({ title: "Instância criada/atualizada no Supabase!" });
+      setActiveTab("manage");
+      setName(""); 
+      setToken(generateToken());
+      setNumber("");
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Erro ao criar", description: error.response?.data?.message || error.message });
     } finally {
       setLoading(false);
     }
   };
 
-  const refreshAll = async () => {
-    setLoading(true);
-    try {
-      await Promise.all(instances.map(inst => fetchStatus(inst.name)));
-      toast({ title: "Status atualizados!" });
-    } catch {}
-    setLoading(false);
-  };
-
-  // Polling automático
-  useEffect(() => {
-    if (open) refreshAll();
-    const interval = setInterval(refreshAll, 10000);
-    return () => clearInterval(interval);
-  }, [open]);
-
   const getStatusVariant = (status: string) => {
     if (status === "open" || status === "connected") return "default";
-    if (status === "qrcode" || status === "qr") return "secondary";
+    if (status === "connecting" || status === "qrcode") return "secondary";
     return "destructive";
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">
-          <Smartphone className="mr-2 h-4 w-4" /> Gerenciar Instâncias
+        <Button>
+          <Plus className="mr-2 h-4 w-4" /> Nova Instância
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Gerenciar Instâncias - {company.name}</DialogTitle>
+          <DialogTitle>Instâncias Evolution - {company.nome_fantasia}</DialogTitle>
         </DialogHeader>
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex gap-2 mb-4">
-            <Button onClick={refreshAll} disabled={loading} variant="outline" size="sm">
-              {loading ? <RefreshCw className="mr-2 h-3 w-3 animate-spin" /> : <RefreshCw className="mr-2 h-3 w-3" />}
-              Atualizar Todos
-            </Button>
-          </div>
-          <div className="flex-1 overflow-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Canal</TableHead>
-                  <TableHead>Número</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {instances.map((inst) => (
-                  <TableRow key={inst._id}>
-                    <TableCell>{inst.name}</TableCell>
-                    <TableCell>{inst.channel}</TableCell>
-                    <TableCell>{inst.number || '-'}</TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusVariant(inst.status) as any}>{inst.status}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Button size="sm" variant="ghost" onClick={() => fetchQR(inst.name)} className="mr-1">
-                        <QrCode className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          {qrCode && currentInstance && (
-            <div className="p-4 bg-muted rounded-lg text-center mt-4">
-              <p className="mb-2 font-medium">QR Code: {currentInstance}</p>
-              <img src={`data:image/png;base64,${qrCode}`} alt="QR Code" className="mx-auto max-w-xs rounded shadow-lg" />
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col overflow-hidden">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="create">Criar</TabsTrigger>
+            <TabsTrigger value="manage">Gerenciar ({instances?.length || 0})</TabsTrigger>
+          </TabsList>
+          <TabsContent value="create" className="flex-1 flex flex-col mt-4 space-y-4 overflow-hidden p-1">
+            <div className="space-y-2">
+              <Label>Nome<span className="text-red-500 ml-1">*</span></Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="minha-instancia-1" />
             </div>
-          )}
-        </div>
+            <div className="space-y-2">
+              <Label>Canal</Label>
+              <Select value={channel} onValueChange={setChannel}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="baileys">Baileys</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Token<span className="text-red-500 ml-1">*</span></Label>
+              <Input 
+                value={token} 
+                readOnly 
+                className="bg-muted cursor-not-allowed font-mono text-sm"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Número (opcional)</Label>
+              <Input value={number} onChange={(e) => setNumber(e.target.value)} placeholder="5511999999999" />
+            </div>
+            <Button onClick={handleCreate} disabled={!name.trim() || !token.trim() || loading} className="w-full">
+              {loading ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <QrCode className="mr-2 h-4 w-4" />}
+              {loading ? "Criando..." : "Criar Instância"}
+            </Button>
+          </TabsContent>
+          <TabsContent value="manage" className="flex-1 flex flex-col mt-4 space-y-4 overflow-hidden p-1">
+            <div className="flex-1 overflow-auto">
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Canal</TableHead>
+                    <TableHead>Número</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Atualizado</TableHead>
+                    <TableHead>Ações</TableHead>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {instances?.map((inst) => (
+                    <TableRow key={inst.id || inst.instance_name}>
+                      <TableCell>{inst.instance_name}</TableCell>
+                      <TableCell>{inst.channel}</TableCell>
+                      <TableCell>{inst.number || '-'}</TableCell>
+                      <TableCell><Badge variant={(getStatusVariant(inst.status) as any)}>{inst.status}</Badge></TableCell>
+                      <TableCell>{inst.updated_at ? new Date(inst.updated_at).toLocaleDateString("pt-BR") : '-'}</TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="sm" onClick={() => fetchQR(inst.instance_name)}>
+                          <QrCode className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )) || []}
+                </TableBody>
+              </Table>
+            </div>
+            {qrCode && (
+              <div className="p-4 bg-muted rounded-lg text-center">
+                <p className="mb-2 font-medium">QR Code: {currentInstance}</p>
+                <img src={`data:image/png;base64,${qrCode}`} alt="QR" className="mx-auto max-w-xs rounded shadow-lg" />
+                <p className="mt-2 text-sm text-muted-foreground">Escaneie com WhatsApp</p>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
 };
 
-export default ManageInstanceModal;
+export default CreateInstanceModal;

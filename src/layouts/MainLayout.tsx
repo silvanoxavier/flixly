@@ -6,21 +6,24 @@ import SidebarNav from '@/components/SidebarNav';
 import UserInfo from '@/components/UserInfo';
 import NotificationsMenu from '@/components/NotificationsMenu';
 import ChatNotificationBell from '@/components/ChatNotificationBell';
+import CompanySelector from '@/components/CompanySelector';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu, Building2 } from "lucide-react";
+import { useCompany } from '@/providers/CompanyProvider';
 
 interface Company {
   id: string;
   nome_fantasia: string;
-  name: string;
-  instance: string;
-  cnpj: string;
+  name?: string;
+  instance?: string;
+  cnpj?: string;
 }
 
 export default function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expanded, setExpanded] = useState(true);
+  const { selectedCompany } = useCompany();
 
   return (
     <div className="flex h-screen bg-background">
@@ -59,20 +62,16 @@ export default function MainLayout() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="border-b bg-card/80 backdrop-blur sticky top-0 z-40 p-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className={`px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary ${expanded ? 'ml-4' : 'ml-20'}`}>
-              Minha Empresa
-            </div>
+            <CompanySelector />
           </div>
           <div className="flex items-center space-x-2">
             <ChatNotificationBell />
             <NotificationsMenu />
-            <UserInfo company={{ nome_fantasia: 'Minha Empresa' }} />
+            <UserInfo company={selectedCompany || undefined} />
           </div>
         </header>
         <main className="flex-1 overflow-auto p-6">
-          <Outlet context={{ 
-            company: { id: '1', nome_fantasia: 'Minha Empresa', name: 'Demo', instance: 'demo', cnpj: '12.345.678/0001-90' } 
-          } as { company: Company | null }} />
+          <Outlet context={{ company: selectedCompany } as { company: Company | null }} />
         </main>
       </div>
     </div>

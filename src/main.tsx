@@ -7,6 +7,7 @@ import './index.css';
 import { ThemeProvider } from './providers/ThemeProvider';
 import { QueryProvider } from './providers/QueryProvider';
 import { AuthProvider } from './providers/AuthProvider';
+import { CompanyProvider } from './providers/CompanyProvider';
 import { Toaster } from '@/components/ui/toaster';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -14,8 +15,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <ThemeProvider>
       <QueryProvider>
         <AuthProvider>
-          <App />
-          <Toaster />
+          <CompanyProvider>
+            <App />
+            <Toaster />
+          </CompanyProvider>
         </AuthProvider>
       </QueryProvider>
     </ThemeProvider>

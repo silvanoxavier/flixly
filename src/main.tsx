@@ -15,8 +15,8 @@ import { Toaster } from '@/components/ui/toaster';
 if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
-    integrations: [Sentry.browserTracingIntegration()],  // ✅ Fix TS2322: função moderna v8+
-    tracesSampleRate: 1.0, // 100% traces prod (reduza para 0.2)
+    integrations: [Sentry.browserTracingIntegration()],  // ✅ Fix TS2322: moderno, sem new BrowserTracing()
+    tracesSampleRate: 1.0,
     environment: import.meta.env.PROD ? 'production' : 'development',
     beforeSend(event) {
       if (import.meta.env.DEV) return null;

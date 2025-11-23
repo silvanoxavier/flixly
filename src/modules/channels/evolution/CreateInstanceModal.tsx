@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useCompany } from "@/providers/CompanyProvider";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { evolutionApi } from "@/lib/evolution";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -91,7 +90,7 @@ export default function CreateInstanceModal() {
     }
   };
 
-  const deleteInstance = async (id: string, instanceName: string) => {
+  const deleteInstance = async (id: string) => {
     if (!confirm("Excluir instância?")) return;
     try {
       await supabase.from("whatsapp_sessions").delete().eq("id", id);
@@ -167,7 +166,7 @@ export default function CreateInstanceModal() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {instances.map((instance) => (
+                {instances.map((instance: Instance) => (
                   <TableRow key={instance.id}>
                     <TableCell>{instance.instance_name}</TableCell>
                     <TableCell>
@@ -192,7 +191,7 @@ export default function CreateInstanceModal() {
                       <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() => deleteInstance(instance.id, instance.instance_name)}
+                        onClick={() => deleteInstance(instance.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

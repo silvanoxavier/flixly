@@ -1,22 +1,16 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useCompany } from '@/providers/CompanyProvider';
 import { Bell } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { supabase } from '@/lib/supabase';
-import { useOutletContext } from 'react-router-dom';
-
-interface CompanyContext {
-  company: { id: string; nome_fantasia: string } | null;
-}
 
 export default function ChatNotificationBell() {
+  const { selectedCompany: company } = useCompany();
   const [unreadCount, setUnreadCount] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
   
-  const context = useOutletContext<CompanyContext | null>();
-  const company = context?.company;
-
   const playNotificationSound = () => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0;

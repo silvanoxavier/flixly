@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send } from "lucide-react";
+import { toast } from "sonner";
 
 interface Message {
   id: string;
@@ -30,18 +31,19 @@ const Chat: React.FC = () => {
     const msg: Message = {
       id,
       text: inputText.trim(),
-      sender: 'me',
+      sender: 'me' as const,
       time: new Date(),
     };
     setMessages(prev => [...prev, msg]);
     setInputText('');
 
+    toast.success('Mensagem enviada!');
     // Simula resposta
     setTimeout(() => {
       const reply: Message = {
         id: (Date.now() + 1).toString(),
         text: 'Mensagem recebida! Como posso ajudar?',
-        sender: 'user',
+        sender: 'user' as const,
         time: new Date(),
       };
       setMessages(prev => [...prev, reply]);

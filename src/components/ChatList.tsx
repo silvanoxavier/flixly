@@ -29,18 +29,25 @@ interface Conversation {
 }
 
 export default function ChatList({ companyId, onSelectChat }: ChatListProps) {
-  const { data: chats = [] } = useQuery<Conversation[]>({
+  const { data: rawChats = [], isLoading } = useQuery<any[]>({
     queryKey: ['conversations', companyId],
     queryFn: async () => {
       const { data } = await supabase
         .from('conversations')
-        .select('id, customer_name, customer_phone, last_message, unread_count, updated_at, avatar_url as avatar')
+        .select('id, customer_name, customer_phone, last_message, unread_count, updated_at, avatar_url')
         .eq('company_id', companyId)
         .order('updated_at', { ascending: false });
       return data || [];
     },
     enabled: !!companyId,
   });
+
+  const chats: Conversation[] = rawChats.map(chat => ({
+    ...chat,
+    avatar: chat.avatar_url,
+  })) as Conversation[];
+
+  if (isLoading) return <div>Carregando...</div>;
 
   return (
     <div className="flex flex-col h-full">

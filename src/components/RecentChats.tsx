@@ -8,14 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { MessageCircle, User } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface RecentChat {
-  id: string;
-  customer_name: string;
-  last_message: string;
-  unread_count: number;
-  updated_at: string;
-}
-
 interface RecentChatsProps {
   companyId: string | undefined;
 }
@@ -72,7 +64,7 @@ export default function RecentChats({ companyId }: RecentChatsProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {recentChats.map((chat) => (
+            {recentChats.map((chat: any) => (
               <TableRow key={chat.id}>
                 <TableCell className="font-medium flex items-center gap-2">
                   <User className="h-4 w-4" />

@@ -5,18 +5,11 @@ import { supabase } from '@/lib/supabase';
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useEffect } from 'react';
+import { Message } from '@/types/message';
 
 interface ChatWindowProps {
   conversationId: string;
   companyId: string;
-}
-
-interface Message {
-  id: string;
-  text: string;
-  sender_type: 'human' | 'bot';
-  created_at: string;
-  read_at?: string;
 }
 
 export default function ChatWindow({ conversationId, companyId }: ChatWindowProps) {
@@ -30,7 +23,7 @@ export default function ChatWindow({ conversationId, companyId }: ChatWindowProp
         .select('*')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
-      return data || [];
+      return (data || []).map(msg => ({ ...msg, time: new Date(msg.created_at) }));
     },
     enabled: !!conversationId,
   });
@@ -66,7 +59,7 @@ export default function ChatWindow({ conversationId, companyId }: ChatWindowProp
                 ? "text-primary-foreground/70" 
                 : "text-muted-foreground"
             }`}>
-              {format(new Date(msg.created_at), "HH:mm", { locale: ptBR })}
+              {format(msg.time, "HH:mm", { locale: ptBR })}
             </p>
           </div>
         </div>

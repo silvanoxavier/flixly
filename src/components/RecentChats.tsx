@@ -7,7 +7,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, User } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "react-router-dom";
 
 interface RecentChat {
   id: string;
@@ -22,19 +21,13 @@ interface RecentChatsProps {
 }
 
 export default function RecentChats({ companyId }: RecentChatsProps) {
-  const { data: recentChats, isLoading } = useQuery<RecentChat[]>({
+  const { data: recentChats = [], isLoading } = useQuery({
     queryKey: ['recent-chats', companyId],
     queryFn: async () => {
       if (!companyId) return [];
       const { data, error } = await supabase
         .from('conversations')
-        .select(`
-          id,
-          customer_name,
-          last_message,
-          unread_count,
-          updated_at
-        `, { count: 'exact' })
+        .select('id, customer_name, last_message, unread_count, updated_at')
         .eq('company_id', companyId)
         .order('updated_at', { ascending: false })
         .limit(5);
@@ -69,17 +62,17 @@ export default function RecentChats({ companyId }: RecentChatsProps) {
           Conversas Recentes
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Cliente</TableHead>
               <TableHead>Última Mensagem</TableHead>
-            <TableHead className="text-right">Não Lidas</TableHead>
+              <TableHead className="text-right">Não Lidas</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {recentChats?.map((chat) => (
+            {recentChats.map((chat) => (
               <TableRow key={chat.id}>
                 <TableCell className="font-medium flex items-center gap-2">
                   <User className="h-4 w-4" />
@@ -92,7 +85,8 @@ export default function RecentChats({ companyId }: RecentChatsProps) {
                   )}
                 </TableCell>
               </TableRow>
-            )) || (
+            ))}
+            {recentChats.length === 0 && (
               <TableRow>
                 <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
                   Nenhuma conversa recente

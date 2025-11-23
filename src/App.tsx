@@ -3,7 +3,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
-import MainLayout from '@/layouts/MainLayout';
+import MainLayout from '~/layouts/MainLayout';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import Index from '@/pages/Index';
 import Login from '@/pages/Login';

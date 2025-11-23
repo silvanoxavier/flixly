@@ -2,7 +2,7 @@
 
 import { Outlet } from 'react-router-dom';
 import { useState } from 'react';
-import SidebarNav from '@/components/SidebarNav';
+import SidebarNav from '~/components/SidebarNav';
 import UserInfo from '@/components/UserInfo';
 import NotificationsMenu from '@/components/NotificationsMenu';
 import ChatNotificationBell from '@/components/ChatNotificationBell';

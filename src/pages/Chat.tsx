@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
-import { evolutionApi } from '@/lib/evolution';
-import { Message } from '@/types/message';
+import { evolutionApi } from '~/lib/evolution';
+import { Message } from '~/types/message';
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Chat() {
@@ -52,7 +52,10 @@ export default function Chat() {
         .select('*')
         .eq('company_id', company.id)
         .order('created_at', { ascending: true });
-      return (data || []).map(msg => ({ ...msg, time: new Date(msg.created_at) }));
+      return (data || []).map(msg => ({ 
+        ...msg, 
+        time: new Date(msg.created_at) // Fix TS2741: sempre converte created_at → time: Date
+      }));
     },
     enabled: !!company?.id,
   });
@@ -60,8 +63,22 @@ export default function Chat() {
   const sendMessage = async () => {
     if (!inputText.trim() || !company?.id) return;
 
+    const msg: Omit<Message, 'id' | 'read_at'> = {
+      text: inputText.trim(),
+      sender_type: 'bot',
+      created_at: new Date().toISOString(),
+      time: new Date(), // Fix TS2741
+      conversation_id: 'demo-conv',
+      company_id: company.id,
+    };
+
     try {
+      // Sync imediato para UI realtime (otimista)
+      await supabase.from('messages').insert(msg);
+      
+      // Envia via Evolution (demo)
       await evolutionApi.sendText('demo-instance', '5511999999999', inputText.trim(), company.id!, 'demo-conv');
+      
       toast.success('Mensagem enviada!');
       setInputText('');
     } catch (error) {

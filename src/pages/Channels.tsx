@@ -3,7 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Facebook, Instagram, Youtube } from "lucide-react";
-import CreateInstanceModal from "../modules/channels/evolution/CreateInstanceModal";
+import CreateInstanceModal from "~/modules/channels/evolution/CreateInstanceModal";
+import ManageInstanceModal from "~/modules/channels/evolution/ManageInstanceModal";
 
 export default function Channels() {
   return (
@@ -26,6 +27,7 @@ export default function Channels() {
           </CardHeader>
           <CardContent className="pt-0">
             <CreateInstanceModal />
+            <ManageInstanceModal />
           </CardContent>
         </Card>
         {/* Outros canais em breve */}

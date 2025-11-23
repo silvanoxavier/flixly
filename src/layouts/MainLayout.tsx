@@ -65,7 +65,6 @@ export default function MainLayout() {
         const formattedData = (data || []).map((c: RawCompanyData) => ({ ...c, id: c.empresa_id }));
         setCompanies(formattedData);
         if (formattedData.length > 0) {
-          // Tenta carregar a última empresa selecionada do localStorage
           const lastSelectedCompanyId = localStorage.getItem('selectedCompanyId');
           const companyToSelect = lastSelectedCompanyId 
             ? formattedData.find((c: Company) => c.id === lastSelectedCompanyId) 
@@ -125,17 +124,15 @@ export default function MainLayout() {
   const sidebarClasses = `${baseSidebarClasses} ${expandedSidebarClasses}`;
   const headerPaddingTop = 'pt-16 md:pt-20';
 
-  if (authLoading || companiesLoading) {
+  // Se ainda estiver carregando autenticação ou empresas, ou se não houver empresa selecionada,
+  // exibe um skeleton para toda a área principal.
+  if (authLoading || companiesLoading || !selectedCompany) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Skeleton className="h-12 w-48" />
       </div>
     );
   }
-
-  // Renderiza o Outlet apenas se selectedCompany não for null
-  // Isso garante que os componentes filhos sempre recebam um 'company' válido no contexto
-  const renderOutlet = selectedCompany ? <Outlet context={{ company: selectedCompany }} /> : null;
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -212,7 +209,7 @@ export default function MainLayout() {
 
       <div className={`flex-1 flex flex-col overflow-hidden ${headerPaddingTop} md:ml-16 min-w-0 transition-none`}>
         <main className="flex-1 overflow-auto p-4 md:p-6">
-          {renderOutlet}
+          <Outlet context={{ company: selectedCompany }} />
         </main>
       </div>
     </div>

@@ -2,8 +2,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import * as Sentry from '@sentry/react';
-import { BrowserTracing } from '@sentry/tracing';  // ✅ Correto: pacote @sentry/tracing instalado
+import * as Sentry from '@sentry/react';  // ✅ browserTracingIntegration() nativo aqui (v8+)
 import App from './App';
 import './index.css';
 import { ThemeProvider } from './providers/ThemeProvider';
@@ -16,7 +15,7 @@ import { Toaster } from '@/components/ui/toaster';
 if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
-    integrations: [new BrowserTracing()],
+    integrations: [Sentry.browserTracingIntegration()],  // ✅ Fix TS2322: função moderna v8+
     tracesSampleRate: 1.0, // 100% traces prod (reduza para 0.2)
     environment: import.meta.env.PROD ? 'production' : 'development',
     beforeSend(event) {

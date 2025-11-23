@@ -1,32 +1,100 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useOutletContext } from "react-router-dom";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 import { Button } from "@/components/ui/button";
 import { Phone, Video, MoreVertical, MessageCircle, User } from "lucide-react";
 import ChatList from "../components/ChatList";
 import ChatWindow from "../components/ChatWindow";
-import MessageComposer from "../components/MessageComposer"; // Assuming MessageComposer is generic enough or will be adapted
+import MessageComposer from "../components/MessageComposer";
+import { evolutionApi } from '@/lib/evolution';
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface Chat {
-  id: number;
-  name: string;
-  avatar: string;
-  status: string;
+interface CompanyContext {
+  company: { id: string; nome_fantasia: string };
+}
+
+interface Conversation {
+  id: string;
+  customer_name: string;
+  customer_phone: string;
+}
+
+interface Instance {
+  instance_name: string;
 }
 
 export default function WhatsApp() {
-  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
+  const { company } = useOutletContext<CompanyContext>();
+  const queryClient = useQueryClient();
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+
+  const { data: activeInstance } = useQuery<Instance | null>({
+    queryKey: ['active-instance', company.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('whatsapp_sessions')
+        .select('instance_name')
+        .eq('company_id', company.id)
+        .eq('status', 'connected')
+        .single();
+      return data || null;
+    },
+    enabled: !!company.id,
+  });
+
+  // Realtime messages channel for company
+  useEffect(() => {
+    if (!company.id) return;
+
+    const channel = supabase.channel(`company-messages:${company.id}`);
+    channel
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `company_id=eq.${company.id}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['conversations', company.id] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [company.id, queryClient]);
+
+  const handleSend = useCallback(async (text: string) => {
+    if (!selectedConversation || !activeInstance) return;
+
+    try {
+      await evolutionApi.sendText(
+        activeInstance.instance_name,
+        selectedConversation.customer_phone,
+        text,
+        company.id,
+        selectedConversation.id
+      );
+    } catch (error) {
+      console.error('Send failed:', error);
+    }
+  }, [selectedConversation, activeInstance, company.id]);
+
+  if (!company.id || !activeInstance) {
+    return <Skeleton className="h-full" />;
+  }
 
   return (
     <div className="flex h-full md:flex-row flex-col">
-      {/* Chat List responsiva */}
-      <div className="w-full md:w-72 lg:w-80 xl:w-96 border-r bg-card flex-shrink-0 flex flex-col">
-        <ChatList onSelectChat={setSelectedChat} />
+      <div className="w-full md:w-80 border-r bg-card flex-shrink-0 flex flex-col">
+        <ChatList 
+          companyId={company.id} 
+          onSelectChat={setSelectedConversation} 
+        />
       </div>
 
-      {/* Chat Window */}
       <div className="flex-1 flex flex-col min-h-0">
-        {selectedChat ? (
+        {selectedConversation ? (
           <>
             <div className="border-b bg-card/80 backdrop-blur p-4 flex items-center justify-between sticky top-0 z-10">
               <div className="flex items-center space-x-3">
@@ -34,8 +102,8 @@ export default function WhatsApp() {
                   <User className="h-5 w-5 text-primary-foreground" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">{selectedChat.name}</h3>
-                  <p className="text-xs text-muted-foreground">{selectedChat.status}</p>
+                  <h3 className="font-semibold">{selectedConversation.customer_name}</h3>
+                  <p className="text-xs text-muted-foreground">Online</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
@@ -44,8 +112,11 @@ export default function WhatsApp() {
                 <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
               </div>
             </div>
-            <ChatWindow />
-            <MessageComposer />
+            <ChatWindow 
+              conversationId={selectedConversation.id} 
+              companyId={company.id} 
+            />
+            <MessageComposer onSend={handleSend} />
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center text-muted-foreground">

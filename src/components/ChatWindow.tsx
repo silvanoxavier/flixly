@@ -1,23 +1,72 @@
 "use client";
 
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useEffect } from 'react';
 
-const messages = [
-  { id: 1, text: "Olá! Tudo bem?", sender: "user", time: "14:25" },
-  { id: 2, text: "Sim, e contigo?", sender: "me", time: "14:26" },
-  { id: 3, text: "Tudo ótimo! Como posso ajudar hoje?", sender: "user", time: "14:27" },
-];
+interface ChatWindowProps {
+  conversationId: string;
+  companyId: string;
+}
 
-export default function ChatWindow() {
+interface Message {
+  id: string;
+  text: string;
+  sender_type: 'human' | 'bot';
+  created_at: string;
+  read_at?: string;
+}
+
+export default function ChatWindow({ conversationId, companyId }: ChatWindowProps) {
+  const queryClient = useQueryClient();
+
+  const { data: messages = [] } = useQuery<Message[]>({
+    queryKey: ['messages', conversationId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true });
+      return data || [];
+    },
+    enabled: !!conversationId,
+  });
+
+  useEffect(() => {
+    if (!conversationId || !companyId) return;
+
+    const channel = supabase.channel(`messages:${conversationId}`);
+    channel
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
+        () => queryClient.invalidateQueries({ queryKey: ['messages', conversationId] })
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [conversationId, companyId, queryClient]);
+
   return (
     <div className="flex-1 overflow-auto p-4 space-y-4 bg-background/50">
       {messages.map((msg) => (
-        <div key={msg.id} className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"}`}>
-          <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${msg.sender === "me" ? "bg-primary text-primary-foreground ml-auto" : "bg-muted rounded-br-none"}`}>
+        <div key={msg.id} className={`flex ${msg.sender_type === 'bot' ? "justify-end" : "justify-start"}`}>
+          <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+            msg.sender_type === 'bot' 
+              ? "bg-primary text-primary-foreground ml-auto" 
+              : "bg-muted rounded-br-none"
+          }`}>
             <p>{msg.text}</p>
-            <p className={`text-xs mt-1 ${msg.sender === "me" ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-              {format(new Date(`2023-01-01 ${msg.time}`), "HH:mm", { locale: ptBR })}
+            <p className={`text-xs mt-1 ${
+              msg.sender_type === 'bot' 
+                ? "text-primary-foreground/70" 
+                : "text-muted-foreground"
+            }`}>
+              {format(new Date(msg.created_at), "HH:mm", { locale: ptBR })}
             </p>
           </div>
         </div>

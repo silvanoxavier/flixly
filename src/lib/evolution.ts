@@ -1,4 +1,7 @@
+"use client";
+
 import axios, { AxiosResponse } from "axios";
+import { supabase } from "~/lib/supabase";
 
 interface EvolutionResponse<T = any> {
   status: boolean;
@@ -43,8 +46,28 @@ export const evolutionApi = {
   getConnectionState: async (instanceName: string): Promise<AxiosResponse<EvolutionResponse<{ status: string }>>> =>
     api.get(`/instance/fetchStatus/${instanceName}`),
 
-  sendText: async (instanceName: string, number: string, text: string): Promise<AxiosResponse<EvolutionResponse>> =>
-    api.post(`/message/sendText/${instanceName}/${number}`, { text }),
+  sendText: async (
+    instanceName: string, 
+    number: string, 
+    text: string,
+    companyId: string,
+    conversationId?: string
+  ): Promise<AxiosResponse<EvolutionResponse>> => {
+    const res = await api.post(`/message/sendText/${instanceName}/${number}`, { text });
+
+    // Sync outgoing to Supabase (assumes triggers update conversation)
+    if (res.data.status && companyId) {
+      await supabase.from('messages').insert({
+        conversation_id: conversationId,
+        company_id: companyId,
+        text,
+        sender_type: 'bot', // outgoing
+        read_at: new Date().toISOString(),
+      });
+    }
+
+    return res;
+  },
 
   sendMedia: async (
     instanceName: string,

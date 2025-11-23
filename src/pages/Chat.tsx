@@ -1,73 +1,67 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useOutletContext } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
+import { evolutionApi } from '@/lib/evolution';
 
-interface Message {
-  id: string;
-  text: string;
-  sender: 'me' | 'user';
-  time: Date;
+interface CompanyContext {
+  company: { id: string };
 }
 
 const Chat: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { company } = useOutletContext<CompanyContext>();
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  useEffect(scrollToBottom, [messages]);
+  useEffect(() => {
+    scrollToBottom();
+  }, []);
 
-  const sendMessage = () => {
-    if (!inputText.trim()) return;
+  // Realtime demo messages (company-wide)
+  useEffect(() => {
+    if (!company.id) return;
 
-    const id = Date.now().toString();
-    const msg: Message = {
-      id,
-      text: inputText.trim(),
-      sender: 'me' as const,
-      time: new Date(),
+    const channel = supabase.channel(`chat-demo:${company.id}`);
+    channel
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'messages', filter: `company_id=eq.${company.id}` },
+        () => queryClient.invalidateQueries({ queryKey: ['demo-messages'] })
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
     };
-    setMessages(prev => [...prev, msg]);
-    setInputText('');
+  }, [company.id, queryClient]);
 
-    toast.success('Mensagem enviada!');
-    // Simula resposta
-    setTimeout(() => {
-      const reply: Message = {
-        id: (Date.now() + 1).toString(),
-        text: 'Mensagem recebida! Como posso ajudar?',
-        sender: 'user' as const,
-        time: new Date(),
-      };
-      setMessages(prev => [...prev, reply]);
-    }, 1000);
+  const sendMessage = async () => {
+    if (!inputText.trim() || !company.id) return;
+
+    try {
+      // Demo: send to first conversation or mock
+      await evolutionApi.sendText('demo-instance', '5511999999999', inputText.trim(), company.id);
+      toast.success('Mensagem enviada!');
+      setInputText('');
+    } catch (error) {
+      toast.error('Erro ao enviar');
+    }
   };
 
   return (
     <div className="flex h-full flex-col bg-background">
-      <div className="p-6 border-b font-bold text-2xl">Chat</div>
+      <div className="p-6 border-b font-bold text-2xl">Chat Demo</div>
       <div className="flex-1 overflow-auto p-6 space-y-4">
-        {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-md px-4 py-2 rounded-2xl ${
-              msg.sender === 'me' 
-                ? 'bg-primary text-primary-foreground' 
-                : 'bg-muted'
-            }`}>
-              <p>{msg.text}</p>
-              <p className="text-xs mt-1 opacity-75 text-right">
-                {msg.time.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-              </p>
-            </div>
-          </div>
-        ))}
         <div ref={messagesEndRef} />
       </div>
       <div className="border-t p-4 bg-card">

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Bell } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Bell } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { supabase } from '@/lib/supabase';
 import { useOutletContext } from 'react-router-dom';
@@ -20,11 +20,11 @@ export default function ChatNotificationBell() {
   const playNotificationSound = () => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(e => console.log('Audio play failed:', e));
+      audioRef.current.play().catch(console.error);
     }
   };
 
-  const fetchUnreadCount = async (conversationIds: string[]) => {
+  const fetchUnreadCount = useCallback(async (conversationIds: string[]) => {
     if (conversationIds.length === 0 || !company?.id) {
       setUnreadCount(0);
       return;
@@ -37,10 +37,10 @@ export default function ChatNotificationBell() {
       .neq('sender_type', 'bot')
       .eq('company_id', company.id);
 
-    if (!error) {
-      setUnreadCount(count || 0);
+    if (!error && count !== null) {
+      setUnreadCount(count);
     }
-  };
+  }, [company?.id]);
 
   useEffect(() => {
     if (!company?.id) {
@@ -49,6 +49,7 @@ export default function ChatNotificationBell() {
     }
 
     let conversationIds: string[] = [];
+    let channelRef = supabase.channel(`chat-messages-${company.id}`);
 
     const setupSubscription = async () => {
       const { data: conversations, error: convError } = await supabase
@@ -61,11 +62,10 @@ export default function ChatNotificationBell() {
         return;
       }
       
-      conversationIds = conversations.map(c => c.id);
+      conversationIds = conversations.map((c: any) => c.id);
       await fetchUnreadCount(conversationIds);
 
-      const channel = supabase
-        .channel(`chat-messages-${company.id}`)
+      channelRef
         .on('postgres_changes', 
           { 
             event: 'INSERT', 
@@ -73,7 +73,7 @@ export default function ChatNotificationBell() {
             table: 'messages',
             filter: `company_id=eq.${company.id}`
           },
-          (payload) => {
+          (payload: any) => {
             if (payload.new && !payload.new.read_at && payload.new.sender_type !== 'bot') {
               playNotificationSound();
               fetchUnreadCount(conversationIds);
@@ -81,18 +81,14 @@ export default function ChatNotificationBell() {
           }
         )
         .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
     };
 
-    const cleanup = setupSubscription();
+    setupSubscription();
 
     return () => {
-      if (cleanup) cleanup();
+      supabase.removeChannel(channelRef);
     };
-  }, [company]);
+  }, [company, fetchUnreadCount]);
 
   if (!company) {
     return null;

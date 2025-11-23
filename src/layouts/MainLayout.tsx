@@ -30,7 +30,7 @@ interface RawCompanyData {
 }
 
 export default function MainLayout() {
-  const { session, loading } = useAuth();
+  const { session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -42,13 +42,18 @@ export default function MainLayout() {
   const { setTheme } = useTheme();
 
   useEffect(() => {
-    if (!loading && !session) {
+    if (!authLoading && !session) {
       navigate('/login', { replace: true });
     }
-  }, [loading, session, navigate]);
+  }, [authLoading, session, navigate]);
 
   useEffect(() => {
-    if (!session?.user.id) return;
+    if (!session?.user.id) {
+      setCompanies([]);
+      setSelectedCompany(null);
+      setCompaniesLoading(false);
+      return;
+    }
 
     const fetchCompanies = async () => {
       setCompaniesLoading(true);
@@ -59,9 +64,19 @@ export default function MainLayout() {
         if (error) throw error;
         const formattedData = (data || []).map((c: RawCompanyData) => ({ ...c, id: c.empresa_id }));
         setCompanies(formattedData);
-        if (formattedData.length > 0) setSelectedCompany(formattedData[0]);
+        if (formattedData.length > 0) {
+          // Tenta carregar a última empresa selecionada do localStorage
+          const lastSelectedCompanyId = localStorage.getItem('selectedCompanyId');
+          const companyToSelect = lastSelectedCompanyId 
+            ? formattedData.find((c: Company) => c.id === lastSelectedCompanyId) 
+            : formattedData[0];
+          setSelectedCompany(companyToSelect || formattedData[0]);
+        } else {
+          setSelectedCompany(null);
+        }
       } catch (error) {
-        console.error('Erro companies:', error);
+        console.error('Erro ao carregar empresas:', error);
+        setSelectedCompany(null);
       } finally {
         setCompaniesLoading(false);
       }
@@ -72,12 +87,15 @@ export default function MainLayout() {
 
   const handleCompanySelect = (id: string) => {
     const company = companies.find(c => c.id === id);
-    if (company) setSelectedCompany(company);
+    if (company) {
+      setSelectedCompany(company);
+      localStorage.setItem('selectedCompanyId', company.id); // Salva no localStorage
+    }
   };
 
   const handleMouseEnter = () => setSidebarExpanded(true);
   const handleMouseLeave = () => setTimeout(() => setSidebarExpanded(false), 150);
-  const handleNavClick = () => setSidebarExpanded(false);
+  const handleNavClick = () => setMobileOpen(false); // Fecha o mobile sidebar ao clicar em um item
 
   const pageTitles: Record<string, string> = {
     "/": "Início",
@@ -107,7 +125,7 @@ export default function MainLayout() {
   const sidebarClasses = `${baseSidebarClasses} ${expandedSidebarClasses}`;
   const headerPaddingTop = 'pt-16 md:pt-20';
 
-  if (loading || companiesLoading) {
+  if (authLoading || companiesLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Skeleton className="h-12 w-48" />
@@ -184,7 +202,7 @@ export default function MainLayout() {
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className={`w-80 p-0 border-r bg-card max-w-xs ${headerPaddingTop} md:hidden`}>
-          <SidebarNav expanded={true} onNavClick={() => setMobileOpen(false)} />
+          <SidebarNav expanded={true} onNavClick={handleNavClick} />
         </SheetContent>
       </Sheet>
 

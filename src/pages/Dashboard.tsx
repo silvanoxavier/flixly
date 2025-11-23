@@ -37,6 +37,7 @@ export default function Dashboard() {
       };
     },
     enabled: !!companyId,
+    staleTime: Infinity, // Cache eterno para stats
   });
 
   if (!company || statsLoading) {

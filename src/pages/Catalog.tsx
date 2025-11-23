@@ -12,7 +12,7 @@ import { showError } from '@/utils/toast';
 
 interface Company {
   id: string;
-  nome_fantasia: string; // Adicionado
+  nome_fantasia: string;
   name: string;
   instance: string;
 }
@@ -28,9 +28,8 @@ interface Product {
 }
 
 export default function Catalog() {
-  // Acessa o contexto de forma segura
   const context = useOutletContext<{ company: Company | null }>();
-  const company = context?.company; // Acesso seguro com optional chaining
+  const company = context?.company;
   const companyId = company?.id;
 
   const { data: products, isLoading, error, refetch } = useQuery<Product[]>({
@@ -45,10 +44,15 @@ export default function Catalog() {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!companyId, // Habilita a query apenas se companyId existir
+    enabled: !!companyId,
   });
 
-  // Renderiza um skeleton se a empresa não estiver carregada ou se os dados estiverem carregando
+  const getImageUrl = (imagePath?: string): string | undefined => {
+    if (!imagePath) return undefined;
+    // Supabase Storage CDN otimizado (webp auto, cache)
+    return `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/products/${imagePath}?quality=80&format=auto`;
+  };
+
   if (!company || isLoading) {
     return (
       <div className="space-y-6 w-full max-w-7xl mx-auto h-full">
@@ -97,7 +101,12 @@ export default function Catalog() {
             <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 overflow-hidden h-full">
               <CardHeader className="p-0 h-48 relative overflow-hidden bg-gradient-to-br from-muted to-background">
                 {product.image_url ? (
-                  <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <img 
+                    src={getImageUrl(product.image_url)} 
+                    alt={product.name} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
                 ) : <ImageIcon className="h-12 w-12 text-muted-foreground absolute inset-0 m-auto" />}
               </CardHeader>
               <CardContent className="p-6 pt-0 pb-2 flex-1">

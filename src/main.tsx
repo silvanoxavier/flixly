@@ -2,7 +2,8 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import * as Sentry from '@sentry/react';  // ✅ BrowserTracing integrado aqui
+import * as Sentry from '@sentry/react';
+import { browserTracingIntegration } from '@sentry/react';  // ✅ Fix: named import v8+
 import App from './App';
 import './index.css';
 import { ThemeProvider } from './providers/ThemeProvider';
@@ -15,11 +16,10 @@ import { Toaster } from '@/components/ui/toaster';
 if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
-    integrations: [new Sentry.BrowserTracing()],  // ✅ Integrado: Sentry.BrowserTracing()
-    tracesSampleRate: 1.0, // Capture 100% traces em prod (ajuste para 0.2)
+    integrations: [browserTracingIntegration()],  // ✅ Corrige TS2339
+    tracesSampleRate: 1.0,
     environment: import.meta.env.PROD ? 'production' : 'development',
     beforeSend(event) {
-      // Filtra erros dev/irrelevantes
       if (import.meta.env.DEV) return null;
       return event;
     },

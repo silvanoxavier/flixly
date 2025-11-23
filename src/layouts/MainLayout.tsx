@@ -133,6 +133,10 @@ export default function MainLayout() {
     );
   }
 
+  // Renderiza o Outlet apenas se selectedCompany não for null
+  // Isso garante que os componentes filhos sempre recebam um 'company' válido no contexto
+  const renderOutlet = selectedCompany ? <Outlet context={{ company: selectedCompany }} /> : null;
+
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <header className="fixed top-0 left-0 right-0 h-16 md:h-20 border-b bg-card/90 backdrop-blur-sm z-50 flex items-center px-4 md:px-6">
@@ -208,7 +212,7 @@ export default function MainLayout() {
 
       <div className={`flex-1 flex flex-col overflow-hidden ${headerPaddingTop} md:ml-16 min-w-0 transition-none`}>
         <main className="flex-1 overflow-auto p-4 md:p-6">
-          <Outlet context={{ company: selectedCompany }} />
+          {renderOutlet}
         </main>
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import * as Sentry from '@sentry/react';  // ✅ browserTracingIntegration() nativo aqui (v8+)
+import * as Sentry from '@sentry/react';  // ✅ browserTracingIntegration() nativo v8+
 import App from './App';
 import './index.css';
 import { ThemeProvider } from './providers/ThemeProvider';
@@ -15,7 +15,7 @@ import { Toaster } from '@/components/ui/toaster';
 if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
-    integrations: [Sentry.browserTracingIntegration()],  // ✅ Fix TS2322: moderno, sem new BrowserTracing()
+    integrations: [Sentry.browserTracingIntegration()],  // ✅ Fix TS2322: moderno, type-safe
     tracesSampleRate: 1.0,
     environment: import.meta.env.PROD ? 'production' : 'development',
     beforeSend(event) {

@@ -13,13 +13,18 @@ import { Plus } from "lucide-react";
 import { showSuccess, showError } from '@/utils/toast';
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface Company { id: string; name: string; instance: string; }
+interface Company { 
+  id: string; 
+  nome_fantasia: string; // Adicionado
+  name: string; 
+  instance: string; 
+}
 interface Order { id: string; title: string; status: string; company_id: string; }
 
 export default function Kanban() {
   // Acessa o contexto de forma segura
   const context = useOutletContext<{ company: Company | null }>();
-  const company = context?.company;
+  const company = context?.company; // Acesso seguro com optional chaining
   const companyId = company?.id;
   const queryClient = useQueryClient();
 

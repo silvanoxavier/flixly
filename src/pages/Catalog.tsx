@@ -12,6 +12,7 @@ import { showError } from '@/utils/toast';
 
 interface Company {
   id: string;
+  nome_fantasia: string; // Adicionado
   name: string;
   instance: string;
 }
@@ -29,7 +30,7 @@ interface Product {
 export default function Catalog() {
   // Acessa o contexto de forma segura
   const context = useOutletContext<{ company: Company | null }>();
-  const company = context?.company;
+  const company = context?.company; // Acesso seguro com optional chaining
   const companyId = company?.id;
 
   const { data: products, isLoading, error, refetch } = useQuery<Product[]>({
@@ -76,7 +77,7 @@ export default function Catalog() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Catálogo WhatsApp Business</h1>
-          <p className="text-muted-foreground">Produtos da {company?.name} (Supabase realtime).</p>
+          <p className="text-muted-foreground">Produtos da {company?.nome_fantasia} (Supabase realtime).</p>
         </div>
         <Badge variant="outline" className="flex items-center gap-1">
           <Package className="h-4 w-4" />

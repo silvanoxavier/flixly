@@ -32,8 +32,15 @@ import {
 import { showSuccess, showError } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 
+interface Company {
+  id: string;
+  nome_fantasia: string; // Adicionado
+  name: string;
+  instance: string;
+}
+
 interface ContextType {
-  company: { id: string; name: string; instance: string } | null;
+  company: Company | null;
 }
 
 interface Resource {
@@ -60,7 +67,7 @@ interface CalendarEvent {
 export default function Agendamento() {
   // Acessa o contexto de forma segura
   const context = useOutletContext<ContextType>();
-  const company = context?.company;
+  const company = context?.company; // Acesso seguro com optional chaining
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [activeResources, setActiveResources] = useState<string[]>(resources.map(r => r.id));
@@ -204,7 +211,7 @@ export default function Agendamento() {
         <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
           <CalendarIcon className="h-7 w-7 text-primary" /> Agendamento
         </h1>
-        <p className="text-muted-foreground">Gerencie compromissos e a disponibilidade da equipe para a empresa <strong>{company?.name || 'selecionada'}</strong>.</p>
+        <p className="text-muted-foreground">Gerencie compromissos e a disponibilidade da equipe para a empresa <strong>{company?.nome_fantasia || 'selecionada'}</strong>.</p>
       </div>
 
       <PanelGroup direction="horizontal" className="flex-1 min-h-[600px] border rounded-xl overflow-hidden bg-card">

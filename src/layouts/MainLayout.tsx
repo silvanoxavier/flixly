@@ -19,8 +19,9 @@ import ChatNotificationBell from "@/components/ChatNotificationBell";
 
 interface Company {
   id: string;
-  nome_fantasia: string;
-  cnpj: string;
+  nome_fantasia: string; // Adicionado
+  name: string;
+  instance: string;
 }
 
 interface RawCompanyData {
@@ -62,7 +63,7 @@ export default function MainLayout() {
           client_user_id: session.user.id
         });
         if (error) throw error;
-        const formattedData = (data || []).map((c: RawCompanyData) => ({ ...c, id: c.empresa_id }));
+        const formattedData = (data || []).map((c: RawCompanyData) => ({ ...c, id: c.empresa_id, name: c.nome_fantasia, instance: "" })); // Adicionado name e instance
         setCompanies(formattedData);
         if (formattedData.length > 0) {
           const lastSelectedCompanyId = localStorage.getItem('selectedCompanyId');

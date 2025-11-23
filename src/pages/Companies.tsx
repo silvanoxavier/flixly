@@ -12,8 +12,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CreateInstanceModal from "../modules/channels/evolution/CreateInstanceModal";
 import { useNavigate, useOutletContext } from "react-router-dom";
 
+interface Company {
+  id: string;
+  nome_fantasia: string;
+  name: string; // Adicionado
+  instance: string; // Adicionado
+}
+
 interface ContextType {
-  company: { id: string; nome_fantasia: string } | null;
+  company: Company | null;
 }
 
 interface Empresa {
@@ -28,7 +35,7 @@ export default function Companies() {
   const navigate = useNavigate();
   // Acessa o contexto de forma segura
   const context = useOutletContext<ContextType>();
-  const selectedCompany = context?.company;
+  const selectedCompany = context?.company; // Acesso seguro com optional chaining
   const { session } = useAuth();
 
   const { data: empresas, isLoading } = useQuery<Empresa[]>({

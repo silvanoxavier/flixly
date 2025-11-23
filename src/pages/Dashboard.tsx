@@ -25,7 +25,7 @@ interface Stats {
 export default function Dashboard() {
   // Acessa o contexto de forma segura
   const context = useOutletContext<{ company: Company | null }>();
-  const company = context?.company;
+  const company = context?.company; // Acesso seguro com optional chaining
   const companyId = company?.id;
 
   const clientesQuery = useQuery({
@@ -108,7 +108,7 @@ export default function Dashboard() {
     <div className="space-y-6 w-full max-w-7xl mx-auto h-full">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Visão geral da sua operação Flixly ({company?.name}).</p>
+        <p className="text-muted-foreground">Visão geral da sua operação Flixly ({company?.nome_fantasia}).</p>
       </div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {stats.map((stat, i) => {

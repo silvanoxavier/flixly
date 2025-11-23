@@ -11,12 +11,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { showSuccess, showError } from '@/utils/toast';
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Company { id: string; name: string; instance: string; }
 interface Order { id: string; title: string; status: string; company_id: string; }
 
 export default function Kanban() {
-  const { company } = useOutletContext<{ company: Company }>();
+  // Acessa o contexto de forma segura
+  const context = useOutletContext<{ company: Company | null }>();
+  const company = context?.company;
   const companyId = company?.id;
   const queryClient = useQueryClient();
 
@@ -32,7 +35,7 @@ export default function Kanban() {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!companyId,
+    enabled: !!companyId, // Habilita a query apenas se companyId existir
   });
 
   const updateOrderMutation = useMutation({
@@ -94,7 +97,19 @@ export default function Kanban() {
     moveItem(id, columnKey);
   };
 
-  if (isLoading) return <div>Carregando pedidos...</div>;
+  // Renderiza um skeleton se a empresa não estiver carregada ou se os dados estiverem carregando
+  if (!company || isLoading) {
+    return (
+      <div className="space-y-6 w-full h-full p-4 md:p-6">
+        <Skeleton className="h-10 w-32 mb-6" />
+        <div className="flex gap-4 overflow-x-auto pb-12 h-full">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="w-72 h-[500px] rounded-xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 w-full h-full p-4 md:p-6">

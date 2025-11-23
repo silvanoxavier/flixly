@@ -27,8 +27,10 @@ interface Product {
 }
 
 export default function Catalog() {
-  const { company } = useOutletContext<{ company: Company }>();
-  const companyId = company?.id; // Futuro: de session/JWT
+  // Acessa o contexto de forma segura
+  const context = useOutletContext<{ company: Company | null }>();
+  const company = context?.company;
+  const companyId = company?.id;
 
   const { data: products, isLoading, error, refetch } = useQuery<Product[]>({
     queryKey: ['catalog-products', companyId],
@@ -42,8 +44,22 @@ export default function Catalog() {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!companyId,
+    enabled: !!companyId, // Habilita a query apenas se companyId existir
   });
+
+  // Renderiza um skeleton se a empresa não estiver carregada ou se os dados estiverem carregando
+  if (!company || isLoading) {
+    return (
+      <div className="space-y-6 w-full max-w-7xl mx-auto h-full">
+        <Skeleton className="h-8 w-64 mb-4" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-80 w-full rounded-xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     showError('Erro ao carregar catálogo');
@@ -68,13 +84,7 @@ export default function Catalog() {
         </Badge>
       </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-80 w-full rounded-xl" />
-          ))}
-        </div>
-      ) : products?.length === 0 ? (
+      {products?.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 space-y-4 text-center">
           <Package className="h-12 w-12 text-muted-foreground" />
           <h3 className="text-xl font-semibold">Nenhum produto</h3>

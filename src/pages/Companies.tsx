@@ -26,10 +26,12 @@ interface Empresa {
 
 export default function Companies() {
   const navigate = useNavigate();
-  const { company: selectedCompany } = useOutletContext<ContextType>();
+  // Acessa o contexto de forma segura
+  const context = useOutletContext<ContextType>();
+  const selectedCompany = context?.company;
   const { session } = useAuth();
 
-  const { data: empresas, isLoading } = useQuery<Empresa[]>({ // 'refetch' removido
+  const { data: empresas, isLoading } = useQuery<Empresa[]>({
     queryKey: ['empresas-user'],
     queryFn: async () => {
       if (!session?.user.id) return [];
@@ -61,6 +63,7 @@ export default function Companies() {
     return { variant: 'destructive' as const, text: session.status || 'Desconectada', icon: AlertCircle };
   };
 
+  // Renderiza um skeleton se os dados estiverem carregando
   if (isLoading) {
     return (
       <div className="space-y-6">

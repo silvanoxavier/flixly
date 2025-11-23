@@ -30,9 +30,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { showSuccess, showError } from "@/utils/toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ContextType {
-  company: { id: string; name: string; instance: string };
+  company: { id: string; name: string; instance: string } | null;
 }
 
 interface Resource {
@@ -57,7 +58,10 @@ interface CalendarEvent {
 }
 
 export default function Agendamento() {
-  const { company } = useOutletContext<ContextType>();
+  // Acessa o contexto de forma segura
+  const context = useOutletContext<ContextType>();
+  const company = context?.company;
+
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [activeResources, setActiveResources] = useState<string[]>(resources.map(r => r.id));
   const [isNewEventModalOpen, setIsNewEventModalOpen] = useState(false);
@@ -183,6 +187,16 @@ export default function Agendamento() {
       showSuccess("Google Calendar sincronizado com sucesso!");
     }, 2000);
   };
+
+  // Renderiza um skeleton se a empresa não estiver carregada
+  if (!company) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48 mb-4" />
+        <Skeleton className="h-[600px] w-full rounded-xl" />
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col space-y-6">

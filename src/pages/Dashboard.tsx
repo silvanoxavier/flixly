@@ -23,7 +23,9 @@ interface Stats {
 }
 
 export default function Dashboard() {
-  const { company } = useOutletContext<{ company: Company }>();
+  // Acessa o contexto de forma segura
+  const context = useOutletContext<{ company: Company | null }>();
+  const company = context?.company;
   const companyId = company?.id;
 
   const clientesQuery = useQuery({
@@ -37,7 +39,7 @@ export default function Dashboard() {
       if (error) throw error;
       return count || 0;
     },
-    enabled: !!companyId,
+    enabled: !!companyId, // Habilita a query apenas se companyId existir
   });
 
   const conversasQuery = useQuery({
@@ -91,7 +93,8 @@ export default function Dashboard() {
 
   const isLoading = clientesQuery.isLoading || conversasQuery.isLoading || pedidosQuery.isLoading || produtosQuery.isLoading;
 
-  if (isLoading) {
+  // Renderiza um skeleton se a empresa não estiver carregada ou se os dados estiverem carregando
+  if (!company || isLoading) {
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 h-full">
         {Array.from({ length: 4 }).map((_, i) => (

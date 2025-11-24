@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import dyadComponentTagger from "@dyad-sh/react-vite-component-tagger";
 import react from "@vitejs/plugin-react-swc";
-import sentryVitePlugin from "@sentry/vite-plugin"; // ✅ Default import v4+
+import * as sentryVitePlugin from "@sentry/vite-plugin"; // ✅ Fix: Importa como módulo
 import path from "path";
 
 export default defineConfig(() => {
@@ -12,7 +12,7 @@ export default defineConfig(() => {
 
   // ✅ Sentry só em PROD + authToken presente (evita erro dev)
   if (import.meta.env.PROD && process.env.SENTRY_AUTH_TOKEN) {
-    plugins.push(sentryVitePlugin({
+    plugins.push(sentryVitePlugin.sentryVitePlugin({ // ✅ Fix: Acessa a função corretamente
       org: "seu-org", // Substitua pela sua org Sentry
       project: "flixly",
       authToken: process.env.SENTRY_AUTH_TOKEN,

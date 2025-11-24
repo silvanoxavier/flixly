@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCompany } from "@/providers/CompanyProvider";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +40,8 @@ interface Instance {
   instance_name: string;
   status: string;
   company_id: string;
+  channel?: string; // Adicionado para exibir na tabela
+  session_data?: { token?: string; channel?: string }; // Adicionado para acessar o token e o canal
 }
 
 export default function CreateInstanceModal() {
@@ -53,6 +55,7 @@ export default function CreateInstanceModal() {
   const [loading, setLoading] = useState(false);
   const [polling, setPolling] = useState(false);
   const [status, setStatus] = useState("qrcode");
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const { data: instances = [] } = useQuery<Instance[]>({
     queryKey: ["whatsapp_sessions", company?.id],
@@ -79,6 +82,14 @@ export default function CreateInstanceModal() {
   useEffect(() => {
     if (open) {
       generateToken(); // Auto-gerar token ao abrir modal
+      setInstanceName(""); // Limpa o nome da instância
+      setChannel("baileys"); // Reseta o canal
+      setQrCode(""); // Limpa QR Code
+      setStatus("qrcode"); // Reseta status
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        setPolling(false);
+      }
     }
   }, [open]);
 
@@ -119,7 +130,7 @@ export default function CreateInstanceModal() {
           company_id: company.id,
           instance_name: instanceName.trim(),
           channel,
-          session_data: { token }, // Armazena token na session_data JSONB
+          session_data: { token, channel }, // Armazena token e channel na session_data JSONB
           status: "qrcode",
           qr_code_data: data.data.qrCode,
         });
@@ -131,7 +142,7 @@ export default function CreateInstanceModal() {
 
         // Poll status até CONNECTED
         setPolling(true);
-        const pollInterval = setInterval(async () => {
+        pollIntervalRef.current = setInterval(async () => {
           try {
             const statusRes = await fetch(
               `${import.meta.env.VITE_EVOLUTION_API_URL}/instance/connectionState/${instanceName.trim()}`,
@@ -148,7 +159,7 @@ export default function CreateInstanceModal() {
                 .update({ status: "connected" })
                 .eq("instance_name", instanceName.trim());
               toast.success("Instância conectada!");
-              clearInterval(pollInterval);
+              if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
               setPolling(false);
             }
           } catch (pollError) {
@@ -157,7 +168,10 @@ export default function CreateInstanceModal() {
         }, 3000);
 
         // Cleanup poll após 5min ou close
-        setTimeout(() => clearInterval(pollInterval), 300000);
+        setTimeout(() => {
+          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+          setPolling(false);
+        }, 300000);
       } else {
         toast.error("Falha na criação da instância.");
       }
@@ -203,8 +217,8 @@ export default function CreateInstanceModal() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <QrCode className="h-4 w-4 mr-2" />
-          Gerenciar Instâncias
+          <Plus className="h-4 w-4 mr-2" />
+          Nova Instância
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
@@ -312,7 +326,7 @@ export default function CreateInstanceModal() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {instances.map((instance) => (
+                {instances.map((instance: Instance) => (
                   <TableRow key={instance.id}>
                     <TableCell>{instance.instance_name}</TableCell>
                     <TableCell>{instance.session_data?.channel || "baileys"}</TableCell>

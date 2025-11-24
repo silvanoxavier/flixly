@@ -2,7 +2,7 @@
 
 import { Outlet } from 'react-router-dom';
 import { useState } from 'react';
-import SidebarNav from '~/components/SidebarNav';
+import SidebarNav from '@/components/SidebarNav'; // Corrigido o alias para @
 import UserInfo from '@/components/UserInfo';
 import NotificationsMenu from '@/components/NotificationsMenu';
 import ChatNotificationBell from '@/components/ChatNotificationBell';
@@ -55,7 +55,7 @@ export default function MainLayout() {
             <Menu className="h-4 w-4" />
           </Button>
         </div>
-        <SidebarNav expanded={expanded} onNavClick={() => expanded && setExpanded(false)} />
+        <SidebarNav expanded={expanded} /> {/* Removido onNavClick */}
       </div>
 
       {/* Main Content */}

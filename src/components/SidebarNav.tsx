@@ -56,10 +56,9 @@ const navItems: NavItem[] = [
 
 interface SidebarNavProps {
   expanded: boolean;
-  onNavClick?: () => void;
 }
 
-export default function SidebarNav({ expanded, onNavClick }: SidebarNavProps) {
+export default function SidebarNav({ expanded }: SidebarNavProps) {
   const navigate = useNavigate();
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
 
@@ -83,7 +82,6 @@ export default function SidebarNav({ expanded, onNavClick }: SidebarNavProps) {
           {item.href && item.label !== 'Sair' ? (
             <NavLink
               to={item.href}
-              onClick={onNavClick}
               className={({ isActive }) =>
                 `group flex items-center rounded-lg transition-all duration-200 overflow-hidden h-11 ${
                   isActive
@@ -136,7 +134,6 @@ export default function SidebarNav({ expanded, onNavClick }: SidebarNavProps) {
                 <NavLink
                   key={child.href}
                   to={child.href!}
-                  onClick={onNavClick}
                   className={({ isActive }) =>
                     `flex items-center rounded-lg transition-colors duration-200 h-9 p-2 ${
                       isActive

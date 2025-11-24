@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
-import { evolutionApi } from '~/lib/evolution';
-import { Message } from '~/types/message';
+import { evolutionApi } from '@/lib/evolution'; // Corrigido o alias para @
+import { Message } from '@/types/message'; // Corrigido o alias para @
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Chat() {

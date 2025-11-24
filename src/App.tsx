@@ -3,7 +3,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
-import MainLayout from '~/layouts/MainLayout';
+import MainLayout from '@/layouts/MainLayout'; // Corrigido o alias para @
 import ErrorBoundary from '@/components/ErrorBoundary';
 import Index from '@/pages/Index';
 import Login from '@/pages/Login';
@@ -27,7 +27,16 @@ const LazyChat = lazy(() => import('@/pages/Chat'));
 const LazyWhatsApp = lazy(() => import('@/pages/WhatsApp'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { session } = useAuth();
+  const { session, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Skeleton className="h-12 w-12 rounded-full animate-pulse" />
+      </div>
+    );
+  }
+
   return session ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
@@ -48,11 +57,16 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/" element={
-            <ProtectedRoute>
-              <MainLayout />
-            </ProtectedRoute>
-          }>
+          
+          {/* Rotas protegidas que usam o MainLayout */}
+          <Route 
+            path="/" 
+            element={
+              <ProtectedRoute>
+                <MainLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<Index />} />
             <Route path="dashboard" element={
               <Suspense fallback={<LazyFallback />}>
@@ -124,8 +138,12 @@ export default function App() {
                 <LazyAdmin />
               </Suspense>
             } />
+            {/* Catch-all para rotas não encontradas dentro do layout */}
             <Route path="*" element={<NotFound />} />
           </Route>
+          
+          {/* Catch-all para rotas não encontradas fora do layout (ex: /invalid-path) */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </ErrorBoundary>

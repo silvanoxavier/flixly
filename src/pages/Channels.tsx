@@ -3,8 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Facebook, Instagram, Youtube } from "lucide-react";
-import CreateInstanceModal from "~/modules/channels/evolution/CreateInstanceModal";
-import ManageInstanceModal from "~/modules/channels/evolution/ManageInstanceModal";
+import CreateInstanceModal from "@/modules/channels/evolution/CreateInstanceModal"; // Corrigido o alias para @
+import ManageInstanceModal from "@/modules/channels/evolution/ManageInstanceModal"; // Corrigido o alias para @
 
 export default function Channels() {
   return (

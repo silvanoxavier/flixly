@@ -1,28 +1,36 @@
 import { defineConfig } from "vite";
 import dyadComponentTagger from "@dyad-sh/react-vite-component-tagger";
 import react from "@vitejs/plugin-react-swc";
-import * as Sentry from "@sentry/vite-plugin";
+import sentryVitePlugin from "@sentry/vite-plugin"; // ✅ Default import v4+
 import path from "path";
 
-export default defineConfig(() => ({
-  server: {
-    host: "::",
-    port: 32136,
-  },
-  plugins: [
+export default defineConfig(() => {
+  const plugins = [
     dyadComponentTagger(), 
     react(),
-    Sentry.vitePlugin({
+  ];
+
+  // ✅ Sentry só em PROD + authToken presente (evita erro dev)
+  if (import.meta.env.PROD && process.env.SENTRY_AUTH_TOKEN) {
+    plugins.push(sentryVitePlugin({
       org: "seu-org", // Substitua pela sua org Sentry
-      project: "flixly", // Nome do projeto Sentry
-      authToken: process.env.SENTRY_AUTH_TOKEN, // Opcional: sentry.io/settings/account/api/auth-tokens
-    }),
-  ],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-      "~": path.resolve(__dirname, "./src"),
-      "@fullcalendar/core/locales": path.resolve(__dirname, "./node_modules/@fullcalendar/core/locales"),
+      project: "flixly",
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+    }));
+  }
+
+  return {
+    server: {
+      host: "::",
+      port: 32136, // ✅ Porta fixa (ignore --port 32100 override)
     },
-  },
-}));
+    plugins,
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+        "~": path.resolve(__dirname, "./src"),
+        "@fullcalendar/core/locales": path.resolve(__dirname, "./node_modules/@fullcalendar/core/locales"),
+      },
+    },
+  };
+});
